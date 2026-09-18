@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   editingVehicleId = urlParams.get('id');
   isEditMode = !!editingVehicleId;
 
+  initLocationDropdowns();
   initDropzone();
 
   if (isEditMode) {
@@ -26,6 +27,41 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadVehicleForEdit(editingVehicleId);
   }
 });
+
+function initLocationDropdowns() {
+  const provSelect = document.getElementById('vehicleRegProvince');
+  const citySelect = document.getElementById('vehicleRegCity');
+  const regInput = document.getElementById('vehicleRegNumber');
+
+  if (provSelect && citySelect) {
+    provSelect.addEventListener('change', () => {
+      const selectedProv = provSelect.value;
+      citySelect.innerHTML = '<option value="">Select Registration City</option>';
+
+      if (selectedProv === 'Unregistered') {
+        if (regInput && !regInput.value) regInput.value = 'Unregistered';
+        return;
+      }
+
+      if (selectedProv && typeof PAKISTAN_LOCATIONS !== 'undefined' && PAKISTAN_LOCATIONS[selectedProv]) {
+        PAKISTAN_LOCATIONS[selectedProv].forEach(city => {
+          const opt = document.createElement('option');
+          opt.value = city;
+          opt.textContent = city;
+          citySelect.appendChild(opt);
+        });
+      }
+    });
+
+    citySelect.addEventListener('change', () => {
+      const selectedCity = citySelect.value;
+      if (selectedCity && regInput && (!regInput.value || regInput.value === 'Unregistered')) {
+        const year = document.getElementById('vehicleYear')?.value || new Date().getFullYear();
+        regInput.value = `${selectedCity.substring(0, 3).toUpperCase()}-${year}-`;
+      }
+    });
+  }
+}
 
 function initDropzone() {
   const dropzone = document.getElementById('imageDropzone');
@@ -194,7 +230,30 @@ async function loadVehicleForEdit(vehicleId) {
 
     if (document.getElementById('vehicleImportYear')) document.getElementById('vehicleImportYear').value = importYear;
     if (document.getElementById('vehicleCondition')) document.getElementById('vehicleCondition').value = v.condition || '';
-    if (document.getElementById('vehicleRegNumber')) document.getElementById('vehicleRegNumber').value = v.registration_number || '';
+    
+    const regNum = v.registration_number || '';
+    if (document.getElementById('vehicleRegNumber')) document.getElementById('vehicleRegNumber').value = regNum;
+    
+    // Detect Province/City from registration string
+    if (typeof PAKISTAN_LOCATIONS !== 'undefined') {
+      for (const [prov, cities] of Object.entries(PAKISTAN_LOCATIONS)) {
+        for (const city of cities) {
+          if (regNum.toLowerCase().includes(city.toLowerCase())) {
+            const provSelect = document.getElementById('vehicleRegProvince');
+            const citySelect = document.getElementById('vehicleRegCity');
+            if (provSelect) {
+              provSelect.value = prov;
+              provSelect.dispatchEvent(new Event('change'));
+              setTimeout(() => {
+                if (citySelect) citySelect.value = city;
+              }, 50);
+            }
+            break;
+          }
+        }
+      }
+    }
+
     if (document.getElementById('vehicleChassisNumber')) document.getElementById('vehicleChassisNumber').value = v.chassis_number || '';
     if (document.getElementById('vehicleMileage')) document.getElementById('vehicleMileage').value = v.mileage || '';
     if (document.getElementById('vehicleFuelType')) document.getElementById('vehicleFuelType').value = v.fuel_type || 'Petrol';

@@ -1,7 +1,7 @@
 /**
  * Taqwa Motors - Main Application Core & Supabase Inventory Sync
  * Rawalpindi, Pakistan
- * "Where Trust Drives Everything"
+ * "BUY • SELL • LEASE"
  */
 
 // Global State
@@ -13,13 +13,12 @@ let isInventoryLoading = false;
 let activeFilters = {
   search: '',
   make: 'all',
-  bodyType: 'all',
+  province: 'all',
+  city: 'all',
   maxPrice: 100000000,
   year: 'all',
   fuelType: 'all',
-  transmission: 'all',
-  assembly: 'all',
-  registrationCity: 'all'
+  transmission: 'all'
 };
 
 // Fallback image when vehicle has no photos uploaded
@@ -43,12 +42,11 @@ function showToast(message, duration = 3000) {
 }
 window.showToast = showToast;
 
-// Format Price in PKR (REQUIREMENT 7: EXACT AND UNROUNDED)
+// Format Price in PKR (Exact & Unrounded)
 function formatPKR(val) {
   const num = Number(val);
   if (isNaN(num)) return `Rs. ${val || '0'}`;
   
-  // Format based on value scale
   if (num >= 10000000) {
     const crore = (num / 10000000).toFixed(2).replace(/\.00$/, '');
     return `PKR ${crore} Crore`;
@@ -57,7 +55,6 @@ function formatPKR(val) {
     const lacs = (num / 100000).toFixed(2).replace(/\.00$/, '');
     return `PKR ${lacs} Lacs`;
   }
-  // Fully preserves exact prices like 2570, 2575, 2580
   return `Rs. ${num.toLocaleString('en-PK')}`;
 }
 window.formatPKR = formatPKR;
@@ -98,6 +95,22 @@ function transformDbVehicle(row, imagesMap) {
 
   const importYear = row.year_of_import || row.import_year || null;
 
+  // Extract location registration from metadata or description
+  let province = row.province || '';
+  let city = row.city || row.registration_city || '';
+  const desc = row.description || '';
+
+  if (!city && desc) {
+    if (/islamabad/i.test(desc)) { city = 'Islamabad'; province = province || 'Islamabad (ICT)'; }
+    else if (/lahore/i.test(desc)) { city = 'Lahore'; province = province || 'Punjab'; }
+    else if (/rawalpindi/i.test(desc)) { city = 'Rawalpindi'; province = province || 'Punjab'; }
+    else if (/karachi/i.test(desc)) { city = 'Karachi'; province = province || 'Sindh'; }
+    else if (/peshawar/i.test(desc)) { city = 'Peshawar'; province = province || 'Khyber Pakhtunkhwa (KPK)'; }
+    else if (/faisalabad/i.test(desc)) { city = 'Faisalabad'; province = province || 'Punjab'; }
+    else if (/multan/i.test(desc)) { city = 'Multan'; province = province || 'Punjab'; }
+    else if (/quetta/i.test(desc)) { city = 'Quetta'; province = province || 'Balochistan'; }
+  }
+
   return {
     id: row.id,
     stockNumber: row.stock_number || `TM-${row.id.substring(0, 6).toUpperCase()}`,
@@ -117,9 +130,12 @@ function transformDbVehicle(row, imagesMap) {
     transmission: row.transmission || 'Automatic',
     engineCapacity: 'Factory Standard',
     horsepower: 'Standard',
-    bodyType: 'SUV / Sedan',
     assembly: 'Local / Imported',
-    registrationCity: 'Islamabad / Rawalpindi',
+    province: province,
+    city: city,
+    registrationCity: city || 'Islamabad / Rawalpindi',
+    registrationNumber: row.registration_number || '',
+    chassisNumber: row.chassis_number || '',
     color: row.color || 'White',
     interiorColor: 'Standard Interior',
     seatingCapacity: 5,
@@ -144,13 +160,13 @@ function transformDbVehicle(row, imagesMap) {
   };
 }
 
-// Generate Vehicle Card HTML (REQUIREMENT 3, 4, 5, 6, 14: SEHGAL MOTORSPORTS REFERENCE STYLE)
+// Generate Vehicle Card HTML
 function renderCarCard(car) {
   let badgeClass = 'badge-regular';
   if (car.status === 'sold') badgeClass = 'badge-sold';
   else if (car.status === 'cancelled') badgeClass = 'badge-cancelled';
   else if (car.status === 'reserved') badgeClass = 'badge-reserved';
-  else if (car.badge.includes('Featured') || car.featured) badgeClass = 'badge-featured';
+  else if (car.featured) badgeClass = 'badge-featured';
   else if (car.status === 'available') badgeClass = 'badge-available';
 
   const isSold = car.status === 'sold';
@@ -162,18 +178,21 @@ function renderCarCard(car) {
   else if (isCancelled) statusText = 'CANCELLED';
   else if (isReserved) statusText = 'RESERVED';
 
-  // Build specifications line (e.g. 2023 • Automatic • Petrol)
+  // Build specifications line (e.g. 2023 • Automatic • Petrol • Islamabad)
   const specsLine = [
     car.variant,
     car.transmission,
-    car.fuelType
+    car.fuelType,
+    car.city || ''
   ].filter(Boolean).join(' • ');
 
+  const isFeatured = car.featured;
+
   return `
-    <article class="car-card reveal-on-scroll ${isSold ? 'car-card-sold' : (isCancelled ? 'car-card-cancelled' : '')}" data-car-id="${car.id}" onclick="window.openCarModal('${car.id}')">
+    <article class="car-card reveal-on-scroll ${isFeatured ? 'car-card-featured-glow' : ''} ${isSold ? 'car-card-sold' : (isCancelled ? 'car-card-cancelled' : '')}" data-car-id="${car.id}" onclick="window.openCarModal('${car.id}')">
       <div class="car-image-container">
         <img src="${car.images[0]}" alt="${car.year} ${car.make} ${car.model}" class="car-image" loading="lazy" onerror="this.onerror=null; this.src='${DEFAULT_CAR_FALLBACK_IMAGE}';">
-        <span class="car-badge ${badgeClass}">${car.badge}</span>
+        <span class="car-badge ${badgeClass}">${isFeatured ? '★ FEATURED' : car.badge}</span>
         ${car.yearOfImport ? `<span class="car-import-tag">Import: ${car.yearOfImport}</span>` : ''}
       </div>
 
@@ -221,18 +240,13 @@ function renderInventoryGrid() {
   const inventory = Array.isArray(window.INVENTORY_DATA) ? window.INVENTORY_DATA : [];
 
   let list = inventory.filter(car => {
-    // Status / Category Filter Tab (Available, Sold, Cancel, All)
+    // Status Filter Tab (Available, Sold, Cancel, All)
     if (currentFilterCategory === 'available') {
       if (car.status && car.status !== 'available') return false;
     } else if (currentFilterCategory === 'sold') {
       if (car.status !== 'sold') return false;
     } else if (currentFilterCategory === 'cancelled' || currentFilterCategory === 'cancel') {
       if (car.status !== 'cancelled') return false;
-    } else if (currentFilterCategory !== 'all') {
-      if (currentFilterCategory === 'suv' && !(car.bodyType && (car.bodyType.includes('SUV') || car.bodyType.includes('Crossover'))) && !car.model.toLowerCase().includes('fortuner') && !car.model.toLowerCase().includes('prado')) return false;
-      if (currentFilterCategory === 'sedan' && !(car.bodyType && car.bodyType.includes('Sedan')) && !car.model.toLowerCase().includes('civic') && !car.model.toLowerCase().includes('corolla') && !car.model.toLowerCase().includes('city')) return false;
-      if (currentFilterCategory === 'hybrid' && car.fuelType !== 'Hybrid' && car.fuelType !== 'Electric' && !(car.conditionGrade && car.conditionGrade.toLowerCase().includes('hybrid'))) return false;
-      if (currentFilterCategory === '4x4' && !car.variant.toLowerCase().includes('sigma') && !car.model.toLowerCase().includes('cruiser') && !car.model.toLowerCase().includes('hilux') && !car.model.toLowerCase().includes('prado') && !car.model.toLowerCase().includes('revo')) return false;
     }
 
     // Search query
@@ -242,17 +256,18 @@ function renderInventoryGrid() {
                     car.model.toLowerCase().includes(q) ||
                     car.variant.toLowerCase().includes(q) ||
                     car.year.toString().includes(q) ||
+                    (car.city && car.city.toLowerCase().includes(q)) ||
+                    (car.province && car.province.toLowerCase().includes(q)) ||
+                    (car.registrationNumber && car.registrationNumber.toLowerCase().includes(q)) ||
                     (car.yearOfImport && car.yearOfImport.toString().includes(q)) ||
                     (car.conditionGrade && car.conditionGrade.toLowerCase().includes(q)) ||
-                    car.color.toLowerCase().includes(q);
+                    car.color.toLowerCase().includes(q) ||
+                    car.description.toLowerCase().includes(q);
       if (!match) return false;
     }
 
     // Make
     if (activeFilters.make !== 'all' && car.make.toLowerCase() !== activeFilters.make.toLowerCase()) return false;
-
-    // Body Type
-    if (activeFilters.bodyType !== 'all' && !car.bodyType.toLowerCase().includes(activeFilters.bodyType.toLowerCase())) return false;
 
     // Price
     if (car.price > activeFilters.maxPrice) return false;
@@ -266,10 +281,41 @@ function renderInventoryGrid() {
     // Transmission
     if (activeFilters.transmission !== 'all' && !car.transmission.toLowerCase().includes(activeFilters.transmission.toLowerCase())) return false;
 
+    // Province Location Filter
+    if (activeFilters.province && activeFilters.province !== 'all') {
+      const p = activeFilters.province.toLowerCase();
+      const pMatch = (car.province && car.province.toLowerCase().includes(p)) ||
+                     (car.registrationCity && car.registrationCity.toLowerCase().includes(p)) ||
+                     (car.description && car.description.toLowerCase().includes(p));
+      
+      // If province is Punjab, also match Punjab cities
+      if (!pMatch && window.PAKISTAN_LOCATIONS && window.PAKISTAN_LOCATIONS[activeFilters.province]) {
+        const provinceCities = window.PAKISTAN_LOCATIONS[activeFilters.province].map(c => c.toLowerCase());
+        const cityMatch = provinceCities.some(c => 
+          (car.city && car.city.toLowerCase().includes(c)) ||
+          (car.registrationCity && car.registrationCity.toLowerCase().includes(c)) ||
+          (car.description && car.description.toLowerCase().includes(c))
+        );
+        if (!cityMatch) return false;
+      } else if (!pMatch) {
+        return false;
+      }
+    }
+
+    // City Location Filter
+    if (activeFilters.city && activeFilters.city !== 'all') {
+      const c = activeFilters.city.toLowerCase();
+      const cityMatch = (car.city && car.city.toLowerCase().includes(c)) ||
+                        (car.registrationCity && car.registrationCity.toLowerCase().includes(c)) ||
+                        (car.registrationNumber && car.registrationNumber.toLowerCase().includes(c)) ||
+                        (car.description && car.description.toLowerCase().includes(c));
+      if (!cityMatch) return false;
+    }
+
     return true;
   });
 
-  // Sort
+  // Sorting: Prioritize Featured Vehicles First (Requirement 6)
   if (currentSortBy === 'price-asc') {
     list.sort((a, b) => a.price - b.price);
   } else if (currentSortBy === 'price-desc') {
@@ -279,8 +325,13 @@ function renderInventoryGrid() {
   } else if (currentSortBy === 'mileage-asc') {
     list.sort((a, b) => a.mileage - b.mileage);
   } else {
-    // Featured first
-    list.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+    // Default Featured First, then newest
+    list.sort((a, b) => {
+      if (b.featured !== a.featured) {
+        return b.featured ? 1 : -1;
+      }
+      return (b.year || 0) - (a.year || 0);
+    });
   }
 
   if (countSpan) countSpan.textContent = `Showing ${list.length} Vehicles`;
@@ -290,7 +341,7 @@ function renderInventoryGrid() {
       <div class="inventory-empty-state">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="1.5" style="margin-bottom: 12px;"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
         <h4 style="color: #0F172A; margin-bottom: 6px;">No Matching Vehicles Found</h4>
-        <p style="color: #64748B; font-size: 0.9rem; max-width: 440px; margin: 0 auto 16px;">Try adjusting your filters or search keywords, or inquire with our sales desk on WhatsApp.</p>
+        <p style="color: #64748B; font-size: 0.9rem; max-width: 440px; margin: 0 auto 16px;">Try adjusting your filters or location search, or inquire with our sales desk on WhatsApp.</p>
         <button class="btn btn-whatsapp btn-sm" onclick="window.openWhatsApp('Assalam-o-Alaikum Taqwa Motors, I am looking for a specific car.')">
           Inquire via WhatsApp
         </button>
@@ -307,13 +358,12 @@ function resetAllFilters() {
   activeFilters = {
     search: '',
     make: 'all',
-    bodyType: 'all',
+    province: 'all',
+    city: 'all',
     maxPrice: 100000000,
     year: 'all',
     fuelType: 'all',
-    transmission: 'all',
-    assembly: 'all',
-    registrationCity: 'all'
+    transmission: 'all'
   };
 
   const searchInput = document.getElementById("inventorySearchInput");
@@ -325,18 +375,55 @@ function resetAllFilters() {
   const priceVal = document.getElementById("sidebarPriceVal");
   if (priceVal) priceVal.textContent = "PKR 10 Crore";
 
-  const selects = ["filterMake", "filterBodyType", "filterYear", "filterFuel", "filterTransmission", "filterRegCity"];
+  const selects = ["filterMake", "filterProvince", "filterCity", "filterYear", "filterFuel", "filterTransmission"];
   selects.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = 'all';
   });
+
+  const citySelect = document.getElementById("filterCity");
+  if (citySelect) {
+    citySelect.innerHTML = '<option value="all">Select Province First</option>';
+    citySelect.disabled = true;
+  }
+
+  const heroCity = document.getElementById("heroCitySelect");
+  if (heroCity) {
+    heroCity.innerHTML = '<option value="all">Select Province First</option>';
+    heroCity.disabled = true;
+  }
 
   renderInventoryGrid();
   showToast("All filters have been reset");
 }
 window.resetAllFilters = resetAllFilters;
 
-// Open Car Details Modal (REQUIREMENT 11, 13: DYNAMIC VEHICLE SPECS)
+// Cascading Province -> City Dropdown Helper
+function handleProvinceChange(provinceVal, targetCitySelectId) {
+  const citySelect = document.getElementById(targetCitySelectId);
+  if (!citySelect) return;
+
+  if (!provinceVal || provinceVal === 'all') {
+    citySelect.innerHTML = '<option value="all">Select Province First</option>';
+    citySelect.disabled = true;
+    return;
+  }
+
+  const cities = window.PAKISTAN_LOCATIONS ? window.PAKISTAN_LOCATIONS[provinceVal] : null;
+  if (cities && cities.length > 0) {
+    let opts = '<option value="all">All Cities</option>';
+    cities.forEach(city => {
+      opts += `<option value="${city}">${city}</option>`;
+    });
+    citySelect.innerHTML = opts;
+    citySelect.disabled = false;
+  } else {
+    citySelect.innerHTML = '<option value="all">All Cities</option>';
+    citySelect.disabled = false;
+  }
+}
+
+// Open Car Details Modal
 function openCarModal(carId) {
   const inventory = Array.isArray(window.INVENTORY_DATA) ? window.INVENTORY_DATA : [];
   const car = inventory.find(c => c.id === carId);
@@ -402,7 +489,7 @@ function openCarModal(carId) {
     `).join('');
   }
 
-  // Spec Matrix (INCLUDES YEAR OF IMPORT)
+  // Spec Matrix
   const matrixContainer = document.getElementById("modalSpecMatrix");
   if (matrixContainer) {
     let matrixHtml = `
@@ -412,6 +499,10 @@ function openCarModal(carId) {
       <div class="spec-matrix-item"><div class="spec-matrix-label">Color</div><div class="spec-matrix-val">${car.color}</div></div>
       <div class="spec-matrix-item"><div class="spec-matrix-label">Model Year</div><div class="spec-matrix-val">${car.year}</div></div>
     `;
+
+    if (car.city || car.province) {
+      matrixHtml += `<div class="spec-matrix-item"><div class="spec-matrix-label">Registration Location</div><div class="spec-matrix-val" style="color: var(--primary-red); font-weight:800;">${[car.city, car.province].filter(Boolean).join(', ')}</div></div>`;
+    }
 
     if (car.yearOfImport) {
       matrixHtml += `<div class="spec-matrix-item"><div class="spec-matrix-label">Year of Import</div><div class="spec-matrix-val" style="color: var(--primary-red); font-weight:800;">${car.yearOfImport}</div></div>`;
@@ -545,6 +636,60 @@ function renderFAQs() {
   `).join('');
 }
 
+// Render Homepage Blog / News Preview
+function renderHomepageBlog() {
+  const container = document.getElementById("homepageBlogGrid");
+  if (!container) return;
+
+  let posts = [];
+  try {
+    const local = localStorage.getItem('taqwa_blog_posts');
+    if (local) posts = JSON.parse(local);
+  } catch (e) {
+    console.warn("Could not read local blog posts:", e);
+  }
+
+  if (!posts || posts.length === 0) {
+    posts = window.INITIAL_BLOG_POSTS || [];
+  }
+
+  const published = posts.filter(p => p.is_published !== false).slice(0, 3);
+
+  if (published.length === 0) {
+    container.innerHTML = `<p style="text-align: center; color: var(--text-dark-muted); grid-column: 1/-1;">No news articles published yet.</p>`;
+    return;
+  }
+
+  container.innerHTML = published.map(post => {
+    const postDate = new Date(post.created_at).toLocaleDateString('en-PK', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    return `
+      <article class="blog-card reveal-on-scroll" onclick="window.location.href='blog.html?slug=${encodeURIComponent(post.slug)}'">
+        <div class="blog-card-img-wrap">
+          <img src="${post.featured_image}" alt="${post.title}" class="blog-card-img" loading="lazy">
+          <span class="blog-card-category">${post.category || 'Automotive'}</span>
+          <span class="blog-card-readtime">${post.read_time || '4 min read'}</span>
+        </div>
+        <div class="blog-card-body">
+          <div class="blog-card-date">${postDate} • By ${post.author || 'Taqwa Motors'}</div>
+          <h3 class="blog-card-title">${post.title}</h3>
+          <p class="blog-card-summary">${post.summary}</p>
+          <div class="blog-card-footer">
+            <span>Read Full Guide</span>
+            <span>→</span>
+          </div>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  triggerScrollReveal();
+}
+
 // Scroll Reveal Effect
 function triggerScrollReveal() {
   const elements = document.querySelectorAll(".reveal-on-scroll");
@@ -648,19 +793,76 @@ function setupAppEvents() {
     });
   });
 
+  // Mobile Filter Toggle Button (Requirement 8)
+  const mobileFilterBtn = document.getElementById("mobileFilterToggleBtn");
+  const sidebar = document.getElementById("inventorySidebar");
+  if (mobileFilterBtn && sidebar) {
+    mobileFilterBtn.addEventListener("click", () => {
+      const isOpen = sidebar.classList.contains("mobile-open");
+      if (isOpen) {
+        sidebar.classList.remove("mobile-open");
+        mobileFilterBtn.classList.remove("active");
+        mobileFilterBtn.setAttribute("aria-expanded", "false");
+      } else {
+        sidebar.classList.add("mobile-open");
+        mobileFilterBtn.classList.add("active");
+        mobileFilterBtn.setAttribute("aria-expanded", "true");
+      }
+    });
+  }
+
+  // Cascading Province -> City Handlers
+  const heroProvince = document.getElementById("heroProvinceSelect");
+  if (heroProvince) {
+    heroProvince.addEventListener("change", (e) => {
+      handleProvinceChange(e.target.value, "heroCitySelect");
+    });
+  }
+
+  const sidebarProvince = document.getElementById("filterProvince");
+  if (sidebarProvince) {
+    sidebarProvince.addEventListener("change", (e) => {
+      activeFilters.province = e.target.value;
+      activeFilters.city = 'all';
+      handleProvinceChange(e.target.value, "filterCity");
+      renderInventoryGrid();
+    });
+  }
+
+  const sidebarCity = document.getElementById("filterCity");
+  if (sidebarCity) {
+    sidebarCity.addEventListener("change", (e) => {
+      activeFilters.city = e.target.value;
+      renderInventoryGrid();
+    });
+  }
+
   // Hero Quick Search Form
   const heroSearchBtn = document.getElementById("heroSearchSubmitBtn");
   if (heroSearchBtn) {
     heroSearchBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      const makeVal = document.getElementById("heroMakeSelect").value;
-      const typeVal = document.getElementById("heroTypeSelect").value;
-      const priceVal = document.getElementById("heroPriceSelect").value;
+      const makeVal = document.getElementById("heroMakeSelect")?.value || 'all';
+      const provinceVal = document.getElementById("heroProvinceSelect")?.value || 'all';
+      const cityVal = document.getElementById("heroCitySelect")?.value || 'all';
+      const priceVal = document.getElementById("heroPriceSelect")?.value || 'all';
 
       activeFilters.make = makeVal;
-      activeFilters.bodyType = typeVal;
+      activeFilters.province = provinceVal;
+      activeFilters.city = cityVal;
       if (priceVal !== 'all') {
         activeFilters.maxPrice = parseInt(priceVal, 10);
+      }
+
+      // Sync to sidebar inputs
+      const sMake = document.getElementById("filterMake");
+      if (sMake) sMake.value = makeVal;
+      const sProv = document.getElementById("filterProvince");
+      if (sProv) {
+        sProv.value = provinceVal;
+        handleProvinceChange(provinceVal, "filterCity");
+        const sCity = document.getElementById("filterCity");
+        if (sCity && cityVal !== 'all') sCity.value = cityVal;
       }
 
       const invSection = document.getElementById("inventory");
@@ -695,11 +897,9 @@ function setupAppEvents() {
   // Sidebar Selects
   const filtersMapping = [
     { id: "filterMake", key: "make" },
-    { id: "filterBodyType", key: "bodyType" },
     { id: "filterYear", key: "year" },
     { id: "filterFuel", key: "fuelType" },
-    { id: "filterTransmission", key: "transmission" },
-    { id: "filterRegCity", key: "registrationCity" }
+    { id: "filterTransmission", key: "transmission" }
   ];
 
   filtersMapping.forEach(({ id, key }) => {
@@ -775,7 +975,7 @@ async function loadPublicInventoryFromSupabase() {
       return;
     }
 
-    // 1. Fetch from vehicles or public_inventory view
+    // Fetch from vehicles or public_inventory view
     let dbVehicles = null;
     
     const { data: vData, error: vErr } = await supabase
@@ -803,7 +1003,7 @@ async function loadPublicInventoryFromSupabase() {
       return;
     }
 
-    // 2. Fetch public images for vehicles
+    // Fetch public images for vehicles
     const { data: dbImages, error: imgError } = await supabase
       .from('vehicle_images')
       .select('vehicle_id, image_url, is_primary, sort_order')
@@ -813,7 +1013,7 @@ async function loadPublicInventoryFromSupabase() {
       console.warn("Could not fetch vehicle_images:", imgError);
     }
 
-    // 3. Map images by vehicle_id
+    // Map images by vehicle_id
     const imagesMap = {};
     if (dbImages && dbImages.length > 0) {
       dbImages.forEach(img => {
@@ -831,11 +1031,11 @@ async function loadPublicInventoryFromSupabase() {
       });
     }
 
-    // 4. Transform rows into UI vehicle schema
+    // Transform rows into UI vehicle schema
     const transformed = (dbVehicles || []).map(row => transformDbVehicle(row, imagesMap));
     window.INVENTORY_DATA = transformed;
 
-    // 5. Update Dynamic Filter Make options
+    // Update Dynamic Filter Make options
     if (transformed.length > 0) {
       const makes = Array.from(new Set(transformed.map(v => v.make).filter(Boolean)));
       const makeSelect = document.getElementById("filterMake");
@@ -860,7 +1060,7 @@ async function loadPublicInventoryFromSupabase() {
 }
 window.loadPublicInventoryFromSupabase = loadPublicInventoryFromSupabase;
 
-// Trust Metrics Number Counter Animation (0 -> Final Target Value)
+// Trust Metrics Number Counter Animation
 function initCounterAnimation() {
   const counters = document.querySelectorAll('.stat-number[data-target]');
   if (!counters.length) return;
@@ -875,7 +1075,7 @@ function initCounterAnimation() {
       const target = parseFloat(counter.getAttribute('data-target'));
       const suffix = counter.getAttribute('data-suffix') || '';
       const decimals = parseInt(counter.getAttribute('data-decimals') || '0', 10);
-      const duration = 2000; // 2 seconds animation
+      const duration = 2000;
       let startTimestamp = null;
 
       const step = (timestamp) => {
@@ -883,7 +1083,6 @@ function initCounterAnimation() {
         const elapsed = timestamp - startTimestamp;
         const progress = Math.min(elapsed / duration, 1);
 
-        // Ease Out Cubic: 1 - (1 - progress)^3
         const ease = 1 - Math.pow(1 - progress, 3);
         const current = ease * target;
 
@@ -896,7 +1095,6 @@ function initCounterAnimation() {
         if (progress < 1) {
           requestAnimationFrame(step);
         } else {
-          // Guarantee exact final value
           if (decimals > 0) {
             counter.textContent = target.toFixed(decimals) + suffix;
           } else {
@@ -922,7 +1120,6 @@ function initCounterAnimation() {
 
     observer.observe(statsSection);
   } else {
-    // Fallback: trigger after 300ms
     setTimeout(animateCounters, 300);
   }
 }
@@ -933,6 +1130,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderServices();
   renderTestimonials();
   renderFAQs();
+  renderHomepageBlog();
   updateDealershipStatus();
   setupAppEvents();
   initCounterAnimation();

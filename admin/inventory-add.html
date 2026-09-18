@@ -39,6 +39,10 @@
           <i data-lucide="users"></i>
           <span>Customers</span>
         </a>
+        <a href="blog.html" class="sidebar-link">
+          <i data-lucide="newspaper"></i>
+          <span>Blog CMS</span>
+        </a>
         <a href="#" class="sidebar-link" onclick="alert('Sales & Invoicing is directly accessible inside vehicle operations & customer records.')">
           <i data-lucide="badge-dollar-sign"></i>
           <span>Sales</span>
@@ -154,21 +158,41 @@
             </div>
           </div>
 
-          <!-- Section 2: Vehicle Specifications & Private IDs -->
+          <!-- Section 2: Vehicle Specifications & Registration Details -->
           <div class="form-card-section">
             <div class="form-section-title">
               <i data-lucide="sliders" style="width: 20px; height: 20px; color: var(--admin-primary);"></i>
-              <span>2. Technical Specifications & Private Identifiers</span>
+              <span>2. Technical Specifications & Location Identifiers</span>
             </div>
-            <p class="form-section-subtitle">Vehicle powertrain, metrics, and confidential showroom registration data</p>
+            <p class="form-section-subtitle">Vehicle powertrain, registration location, and showroom data</p>
 
             <div class="form-grid-2">
+              <div class="form-group">
+                <label for="vehicleRegProvince" class="form-label">Registration Province</label>
+                <select id="vehicleRegProvince" class="admin-select">
+                  <option value="">Select Province / Territory</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Islamabad Capital Territory (ICT)">Islamabad (ICT)</option>
+                  <option value="Sindh">Sindh</option>
+                  <option value="Khyber Pakhtunkhwa (KPK)">KPK</option>
+                  <option value="Balochistan">Balochistan</option>
+                  <option value="Unregistered">Unregistered / Japanese Auction</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="vehicleRegCity" class="form-label">Registration City</label>
+                <select id="vehicleRegCity" class="admin-select">
+                  <option value="">Select Registration City</option>
+                </select>
+              </div>
+
               <div class="form-group">
                 <label for="vehicleRegNumber" class="form-label">
                   Registration Number
                   <span class="badge-private">🔒 Private (Admin Only)</span>
                 </label>
-                <input type="text" id="vehicleRegNumber" class="admin-input" placeholder="e.g. ICT-LE-2022 (leave blank if unregistered)">
+                <input type="text" id="vehicleRegNumber" class="admin-input" placeholder="e.g. ICT-LE-2022 (or Unregistered)">
               </div>
 
               <div class="form-group">
@@ -285,6 +309,7 @@
   </div>
 
   <!-- Scripts -->
+  <script src="../js/data.js"></script>
   <script src="../js/supabase-client.js"></script>
   <script src="js/admin-auth.js"></script>
   <script src="js/admin-vehicle-form.js"></script>

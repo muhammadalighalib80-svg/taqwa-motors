@@ -39,6 +39,10 @@
           <i data-lucide="users"></i>
           <span>Customers</span>
         </a>
+        <a href="blog.html" class="sidebar-link">
+          <i data-lucide="newspaper"></i>
+          <span>Blog CMS</span>
+        </a>
         <a href="#" class="sidebar-link" onclick="alert('Sales & Invoicing is directly accessible inside vehicle operations & customer records.')">
           <i data-lucide="badge-dollar-sign"></i>
           <span>Sales</span>
@@ -152,6 +156,31 @@
               </div>
 
               <div>
+                <select id="filterFeatured" class="admin-select">
+                  <option value="">All Showcase (Featured & Regular)</option>
+                  <option value="featured">★ Featured Only</option>
+                  <option value="standard">Standard Only</option>
+                </select>
+              </div>
+
+              <div>
+                <select id="filterProvince" class="admin-select">
+                  <option value="">All Reg Provinces</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Islamabad Capital Territory (ICT)">Islamabad (ICT)</option>
+                  <option value="Sindh">Sindh</option>
+                  <option value="Khyber Pakhtunkhwa (KPK)">KPK</option>
+                  <option value="Balochistan">Balochistan</option>
+                </select>
+              </div>
+
+              <div>
+                <select id="filterCity" class="admin-select">
+                  <option value="">All Reg Cities</option>
+                </select>
+              </div>
+
+              <div>
                 <select id="filterFuel" class="admin-select">
                   <option value="">All Fuels</option>
                   <option value="Petrol">Petrol</option>
@@ -206,6 +235,7 @@
               <thead>
                 <tr>
                   <th>Vehicle Info</th>
+                  <th>Featured</th>
                   <th>Condition & Import</th>
                   <th>Private IDs (Reg / Chassis)</th>
                   <th>Mileage</th>
@@ -216,7 +246,7 @@
               </thead>
               <tbody id="inventoryTableBody">
                 <tr>
-                  <td colspan="7" style="text-align: center; color: var(--admin-text-muted); padding: 3rem;">
+                  <td colspan="8" style="text-align: center; color: var(--admin-text-muted); padding: 3rem;">
                     Loading inventory...
                   </td>
                 </tr>
@@ -229,6 +259,7 @@
   </div>
 
   <!-- Scripts -->
+  <script src="../js/data.js"></script>
   <script src="../js/supabase-client.js"></script>
   <script src="js/admin-auth.js"></script>
   <script src="js/admin-inventory.js"></script>

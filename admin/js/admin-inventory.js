@@ -1,6 +1,6 @@
 /**
  * Taqwa Motors - Admin Inventory Controller
- * Handles live inventory queries, search, multi-filters, quick status changes & deletion.
+ * Handles live inventory queries, search, multi-filters, quick status changes, featured toggle & deletion.
  */
 
 let allVehicles = [];
@@ -10,6 +10,9 @@ let currentFilters = {
   model: '',
   year: '',
   status: '',
+  featured: '',
+  province: '',
+  city: '',
   fuel_type: '',
   transmission: '',
   min_price: '',
@@ -37,8 +40,33 @@ function initFilters() {
     });
   }
 
+  // Cascading Province -> City in Filter
+  const provinceSelect = document.getElementById('filterProvince');
+  const citySelect = document.getElementById('filterCity');
+  if (provinceSelect && citySelect) {
+    provinceSelect.addEventListener('change', () => {
+      const selectedProv = provinceSelect.value;
+      citySelect.innerHTML = '<option value="">All Reg Cities</option>';
+      if (selectedProv && typeof PAKISTAN_LOCATIONS !== 'undefined' && PAKISTAN_LOCATIONS[selectedProv]) {
+        PAKISTAN_LOCATIONS[selectedProv].forEach(city => {
+          const opt = document.createElement('option');
+          opt.value = city;
+          opt.textContent = city;
+          citySelect.appendChild(opt);
+        });
+      }
+      applyFiltersFromUI();
+      loadInventory();
+    });
+  }
+
   // Filter selects & inputs
-  const filterIds = ['filterMake', 'filterModel', 'filterYear', 'filterStatus', 'filterFuel', 'filterTransmission', 'filterMinPrice', 'filterMaxPrice'];
+  const filterIds = [
+    'filterMake', 'filterModel', 'filterYear', 'filterStatus', 
+    'filterFeatured', 'filterCity', 'filterFuel', 'filterTransmission', 
+    'filterMinPrice', 'filterMaxPrice'
+  ];
+
   filterIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) {
@@ -68,6 +96,9 @@ function applyFiltersFromUI() {
   currentFilters.model = document.getElementById('filterModel')?.value || '';
   currentFilters.year = document.getElementById('filterYear')?.value || '';
   currentFilters.status = document.getElementById('filterStatus')?.value || '';
+  currentFilters.featured = document.getElementById('filterFeatured')?.value || '';
+  currentFilters.province = document.getElementById('filterProvince')?.value || '';
+  currentFilters.city = document.getElementById('filterCity')?.value || '';
   currentFilters.fuel_type = document.getElementById('filterFuel')?.value || '';
   currentFilters.transmission = document.getElementById('filterTransmission')?.value || '';
   currentFilters.min_price = document.getElementById('filterMinPrice')?.value || '';
@@ -81,6 +112,9 @@ function resetAllFilters() {
     model: '',
     year: '',
     status: '',
+    featured: '',
+    province: '',
+    city: '',
     fuel_type: '',
     transmission: '',
     min_price: '',
@@ -91,6 +125,9 @@ function resetAllFilters() {
   if (form) form.reset();
   const searchInput = document.getElementById('inventorySearchInput');
   if (searchInput) searchInput.value = '';
+
+  const citySelect = document.getElementById('filterCity');
+  if (citySelect) citySelect.innerHTML = '<option value="">All Reg Cities</option>';
 
   loadInventory();
 }
@@ -104,7 +141,7 @@ async function loadInventory() {
   const countBadge = document.getElementById('inventoryCountBadge');
 
   if (tableBody) {
-    tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--admin-text-muted); padding: 3rem;">Loading inventory records...</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--admin-text-muted); padding: 3rem;">Loading inventory records...</td></tr>`;
   }
 
   try {
@@ -135,6 +172,7 @@ async function loadInventory() {
           is_primary
         )
       `)
+      .order('featured', { ascending: false })
       .order('created_at', { ascending: false });
 
     // Apply Search (Make, Model, Registration, Chassis)
@@ -156,6 +194,17 @@ async function loadInventory() {
     if (currentFilters.status) {
       query = query.eq('status', currentFilters.status);
     }
+    if (currentFilters.featured === 'featured') {
+      query = query.eq('featured', true);
+    } else if (currentFilters.featured === 'standard') {
+      query = query.eq('featured', false);
+    }
+    if (currentFilters.city) {
+      query = query.ilike('registration_number', `%${currentFilters.city}%`);
+    } else if (currentFilters.province) {
+      // If province selected without specific city, filter matching known cities or province name
+      query = query.ilike('registration_number', `%${currentFilters.province}%`);
+    }
     if (currentFilters.fuel_type) {
       query = query.eq('fuel_type', currentFilters.fuel_type);
     }
@@ -174,7 +223,7 @@ async function loadInventory() {
     if (error) {
       console.error('Inventory fetch error:', error);
       if (tableBody) {
-        tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #DC2626; padding: 2rem;">Error: ${error.message}</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #DC2626; padding: 2rem;">Error: ${error.message}</td></tr>`;
       }
       return;
     }
@@ -218,19 +267,33 @@ function renderInventoryTable(vehicles) {
 
     const conditionDisplay = v.condition ? `<div style="font-size:0.78rem; color:var(--admin-text-secondary);">${v.condition}</div>` : '<div style="font-size:0.75rem; color:var(--admin-text-muted);">Standard</div>';
 
+    const isFeatured = !!v.featured;
+
     return `
-      <tr>
+      <tr class="${isFeatured ? 'row-featured' : ''}">
         <td>
           <div class="car-thumb-cell">
             <img src="${imgUrl}" alt="${v.make} ${v.model}" class="car-thumb-img" onerror="this.src='../assets/cars/fortuner_legender.jpg'">
             <div>
               <div class="car-title-primary">
                 ${v.year} ${v.make} ${v.model}
-                ${v.featured ? '<span style="font-size: 0.65rem; background: #FEE2E2; color:#DC2626; padding:1px 5px; border-radius:4px; margin-left:4px; font-weight:700;">★ Featured</span>' : ''}
+                ${isFeatured ? '<span style="font-size: 0.65rem; background: #DC2626; color:#ffffff; padding:1px 5px; border-radius:4px; margin-left:4px; font-weight:700;">★ FEATURED</span>' : ''}
               </div>
               <div class="car-variant-sub">${v.variant || 'Standard'} • ${v.fuel_type || 'Petrol'}</div>
             </div>
           </div>
+        </td>
+        <td>
+          <button 
+            type="button" 
+            class="btn-toggle-featured ${isFeatured ? 'active' : ''}" 
+            onclick="toggleFeatured('${v.id}', ${!isFeatured})"
+            title="${isFeatured ? 'Click to remove from Featured' : 'Click to Mark as Featured Vehicle'}"
+            style="display:inline-flex; align-items:center; gap:4px; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1px solid ${isFeatured ? '#DC2626' : '#E2E8F0'}; background: ${isFeatured ? '#FEE2E2' : '#F8FAFC'}; color: ${isFeatured ? '#DC2626' : '#64748B'}; transition: all 0.2s;"
+          >
+            <i data-lucide="star" style="width: 14px; height: 14px; fill: ${isFeatured ? '#DC2626' : 'none'};"></i>
+            <span>${isFeatured ? 'Featured' : 'Standard'}</span>
+          </button>
         </td>
         <td>
           ${conditionDisplay}
@@ -267,6 +330,27 @@ function renderInventoryTable(vehicles) {
   }).join('');
 
   lucide.createIcons();
+}
+
+async function toggleFeatured(vehicleId, newFeaturedState) {
+  const supabase = window.getSupabaseClient();
+  if (!supabase) return;
+
+  try {
+    const { error } = await supabase
+      .from('vehicles')
+      .update({ featured: newFeaturedState })
+      .eq('id', vehicleId);
+
+    if (error) {
+      alert('Failed to update featured status: ' + error.message);
+    } else {
+      console.log(`Vehicle ${vehicleId} featured status set to: ${newFeaturedState}`);
+      loadInventory();
+    }
+  } catch (err) {
+    console.error('Error toggling featured status:', err);
+  }
 }
 
 async function handleStatusChange(vehicleId, newStatus) {
@@ -314,5 +398,6 @@ async function confirmCancelVehicle(vehicleId, title) {
   }
 }
 
+window.toggleFeatured = toggleFeatured;
 window.handleStatusChange = handleStatusChange;
 window.confirmCancelVehicle = confirmCancelVehicle;

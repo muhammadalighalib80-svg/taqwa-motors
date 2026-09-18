@@ -366,57 +366,24 @@
 }
 
 /* --------------------------------------------------------------------------
-   2. HERO SECTION WITH VIDEO BACKGROUND
+   2. HERO SECTION (SOLID LUXURY DARK AUTOMOTIVE THEME)
    -------------------------------------------------------------------------- */
 .hero-section {
   position: relative;
-  min-height: 88vh;
-  min-height: 88dvh;
+  min-height: 85vh;
+  min-height: 85dvh;
   width: 100%;
   max-width: 100vw;
   display: flex;
   align-items: center;
-  padding-top: 100px;
-  padding-bottom: 50px;
+  padding-top: 110px;
+  padding-bottom: 60px;
   overflow: hidden;
-  background: #090D16;
-}
-
-.hero-video-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.hero-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 45%;
-  transform: scale(1.2);
-  filter: brightness(0.9) contrast(1.05);
-}
-
-.hero-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 2;
-  background: linear-gradient(
-    180deg,
-    rgba(9, 13, 22, 0.7) 0%,
-    rgba(9, 13, 22, 0.45) 40%,
-    rgba(9, 13, 22, 0.8) 80%,
-    rgba(9, 13, 22, 0.95) 100%
-  );
-  pointer-events: none;
+  background-color: #0A0D14;
+  background-image: 
+    radial-gradient(ellipse 80% 50% at 50% 20%, rgba(211, 47, 47, 0.22) 0%, transparent 70%),
+    radial-gradient(circle at 15% 85%, rgba(30, 58, 138, 0.15) 0%, transparent 45%),
+    linear-gradient(180deg, #07090F 0%, #0E131E 60%, #0A0D14 100%);
 }
 
 .hero-radial-glow {
@@ -426,10 +393,10 @@
   width: 100%;
   height: 100%;
   background: radial-gradient(
-    ellipse 90% 70% at 50% 35%,
-    rgba(211, 47, 47, 0.18) 0%,
-    rgba(15, 23, 42, 0.4) 60%,
-    transparent 85%
+    ellipse 90% 60% at 50% 30%,
+    rgba(211, 47, 47, 0.15) 0%,
+    rgba(15, 23, 42, 0.3) 50%,
+    transparent 80%
   );
   pointer-events: none;
   z-index: 2;
@@ -438,7 +405,7 @@
 .hero-content {
   position: relative;
   z-index: 3;
-  max-width: 960px;
+  max-width: 980px;
   width: 100%;
   margin: 0 auto;
   text-align: center;
@@ -458,10 +425,11 @@
 }
 
 .hero-badge-logo {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   flex-shrink: 0;
+  background: #FFFFFF;
 }
 
 .hero-badge-text {
@@ -473,33 +441,36 @@
 }
 
 .hero-badge-text strong {
-  color: #FF6B6B;
-}
-
-.hero-headline {
-  font-size: clamp(2rem, 5.5vw, 4.2rem);
-  font-weight: 900;
-  line-height: 1.1;
-  margin-bottom: 16px;
-  letter-spacing: -0.02em;
-  color: #FFFFFF;
-}
-
-/* NO GRADIENT TEXT */
-.hero-tagline-quote {
-  display: block;
-  font-family: var(--font-heading);
-  font-size: clamp(1.2rem, 3vw, 2rem);
-  font-weight: 800;
-  margin-top: 8px;
   color: #FF5252;
 }
 
+.hero-headline {
+  font-size: clamp(2.2rem, 5.8vw, 4.2rem);
+  font-weight: 900;
+  line-height: 1.12;
+  margin-bottom: 18px;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.hero-tagline-quote {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: clamp(1.3rem, 3.2vw, 2.2rem);
+  font-weight: 900;
+  margin-top: 10px;
+  color: #FF3B30;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-shadow: 0 0 20px rgba(255, 59, 48, 0.4);
+}
+
 .hero-description {
-  font-size: clamp(0.95rem, 1.8vw, 1.18rem);
-  color: #E2E8F0;
-  max-width: 760px;
-  margin: 0 auto 28px;
+  font-size: clamp(0.98rem, 1.8vw, 1.18rem);
+  color: #CBD5E1;
+  max-width: 780px;
+  margin: 0 auto 30px;
   line-height: 1.65;
 }
 
@@ -515,23 +486,23 @@
 
 /* Hero Quick Search Box */
 .hero-search-box {
-  background: rgba(15, 23, 42, 0.88);
+  background: rgba(15, 23, 42, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: var(--radius-lg);
-  padding: 18px 24px;
-  box-shadow: var(--shadow-lg);
-  max-width: 900px;
+  padding: 20px 24px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+  max-width: 960px;
   width: 100%;
-  margin: 0 auto 32px;
+  margin: 0 auto 36px;
   position: relative;
 }
 
 .hero-search-form {
   display: grid;
-  grid-template-columns: repeat(3, 1fr) auto;
-  gap: 16px;
+  grid-template-columns: repeat(4, 1fr) auto;
+  gap: 14px;
   align-items: end;
   width: 100%;
 }
@@ -545,31 +516,39 @@
 }
 
 .search-field label {
-  font-size: 0.75rem;
+  font-size: 0.74rem;
   font-weight: 700;
   text-transform: uppercase;
   color: #94A3B8;
   letter-spacing: 0.05em;
 }
 
-.search-field select {
+.search-field select,
+.search-field input {
   width: 100%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: var(--radius-xs);
   color: #FFFFFF;
-  padding: 10px 14px;
-  font-size: 0.9rem;
+  padding: 10px 12px;
+  font-size: 0.88rem;
   font-weight: 600;
 }
 
-.search-field select:focus {
+.search-field select:focus,
+.search-field input:focus {
   border-color: var(--primary-red);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .search-field select option {
   background: #0F172A;
   color: #FFFFFF;
+}
+
+.search-field select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Trust Stats (SOLID TAQWA RED) */
@@ -2301,3 +2280,445 @@
     height: 12px;
   }
 }
+
+/* --------------------------------------------------------------------------
+   12. MOBILE INVENTORY COMPACT FILTER TOGGLE & COLLAPSIBLE DRAWER
+   -------------------------------------------------------------------------- */
+.mobile-filter-bar {
+  display: none;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.mobile-filter-toggle-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: var(--bg-light);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-dark);
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.mobile-filter-toggle-btn:hover {
+  border-color: var(--primary-red);
+  background: #FFFFFF;
+}
+
+.mobile-filter-toggle-btn.active {
+  background: #FFFFFF;
+  border-color: var(--primary-red);
+  color: var(--primary-red);
+  box-shadow: 0 4px 14px rgba(211, 47, 47, 0.15);
+}
+
+.filter-btn-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-btn-chevron {
+  transition: transform 0.25s ease;
+  font-size: 0.85rem;
+  color: var(--text-dark-muted);
+}
+
+.mobile-filter-toggle-btn.active .filter-btn-chevron {
+  transform: rotate(180deg);
+  color: var(--primary-red);
+}
+
+.filter-active-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-red);
+  color: #FFFFFF;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+}
+
+@media (max-width: 1100px) {
+  .mobile-filter-bar {
+    display: block;
+  }
+
+  .inventory-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  /* Vehicles appear FIRST */
+  .inventory-main-content {
+    order: 2 !important;
+    width: 100% !important;
+  }
+
+  .inventory-sidebar {
+    order: 1 !important;
+    width: 100% !important;
+    display: none;
+    position: static !important;
+    margin-bottom: 8px;
+    animation: fadeInSlideDown 0.25s ease;
+  }
+
+  .inventory-sidebar.mobile-open {
+    display: block !important;
+  }
+}
+
+@keyframes fadeInSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   13. FEATURED VEHICLE BADGE STYLING
+   -------------------------------------------------------------------------- */
+.badge-featured {
+  background: linear-gradient(135deg, #D32F2F 0%, #991B1B 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+  font-weight: 800 !important;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.4) !important;
+}
+
+.car-card-featured-glow {
+  border-color: rgba(211, 47, 47, 0.35) !important;
+}
+
+/* --------------------------------------------------------------------------
+   14. BLOG & AUTOMOTIVE NEWS COMPONENTS
+   -------------------------------------------------------------------------- */
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 28px;
+}
+
+@media (max-width: 768px) {
+  .blog-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+.blog-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.blog-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(211, 47, 47, 0.35);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.blog-card-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: #0F172A;
+  overflow: hidden;
+}
+
+.blog-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.blog-card:hover .blog-card-img {
+  transform: scale(1.05);
+}
+
+.blog-card-category {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 4px 10px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #FFFFFF;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  border-radius: var(--radius-full);
+}
+
+.blog-card-readtime {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  padding: 3px 8px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  color: #E2E8F0;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.blog-card-body {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.blog-card-date {
+  font-size: 0.78rem;
+  color: var(--text-dark-muted);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.blog-card-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  line-height: 1.35;
+  margin-bottom: 10px;
+  transition: color 0.2s ease;
+}
+
+.blog-card:hover .blog-card-title {
+  color: var(--primary-red);
+}
+
+.blog-card-summary {
+  font-size: 0.9rem;
+  color: var(--text-dark-secondary);
+  line-height: 1.55;
+  margin-bottom: 16px;
+  flex-grow: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.blog-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-light);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary-red);
+}
+
+/* Standalone Blog Page Specific Elements */
+.blog-hero {
+  background: #0A0D14;
+  background-image: 
+    radial-gradient(circle at 50% 10%, rgba(211, 47, 47, 0.18) 0%, transparent 60%),
+    linear-gradient(180deg, #07090F 0%, #0D1118 100%);
+  padding: 110px 0 50px;
+  text-align: center;
+  color: #FFFFFF;
+}
+
+.blog-hero h1 {
+  color: #FFFFFF;
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-weight: 900;
+  margin-bottom: 12px;
+}
+
+.blog-hero p {
+  color: #CBD5E1;
+  max-width: 680px;
+  margin: 0 auto;
+  font-size: 1.05rem;
+}
+
+.blog-search-bar {
+  max-width: 540px;
+  margin: 24px auto 0;
+  position: relative;
+}
+
+.blog-search-input {
+  width: 100%;
+  padding: 12px 18px 12px 42px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  color: #FFFFFF;
+  font-size: 0.95rem;
+}
+
+.blog-search-input:focus {
+  border-color: var(--primary-red);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.blog-search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94A3B8;
+}
+
+/* Article Detail Content Styling */
+.article-detail-container {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+.article-header {
+  margin-bottom: 32px;
+}
+
+.article-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.article-title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 900;
+  color: var(--text-dark);
+  line-height: 1.2;
+  margin-bottom: 18px;
+}
+
+.article-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 0;
+  border-top: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.88rem;
+  color: var(--text-dark-muted);
+  flex-wrap: wrap;
+}
+
+.article-featured-img {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  margin: 24px 0 36px;
+  max-height: 480px;
+  object-fit: cover;
+  box-shadow: var(--shadow-md);
+}
+
+.article-body {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--text-dark-secondary);
+}
+
+.article-body h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin: 36px 0 16px;
+}
+
+.article-body h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 28px 0 12px;
+}
+
+.article-body p {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  margin-bottom: 20px;
+  color: var(--text-dark-secondary);
+}
+
+.article-body ul, 
+.article-body ol {
+  margin: 16px 0 24px 24px;
+  line-height: 1.7;
+}
+
+.article-body li {
+  margin-bottom: 8px;
+}
+
+.article-share-box {
+  background: var(--bg-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  margin-top: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.share-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-share {
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.btn-share-whatsapp {
+  background: var(--whatsapp-green);
+  color: #FFFFFF;
+}
+
+.btn-share-facebook {
+  background: #1877F2;
+  color: #FFFFFF;
+}
+
+.btn-share-copy {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  color: var(--text-dark);
+}
+

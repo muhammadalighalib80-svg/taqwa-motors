@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog & News CMS | Taqwa Motors Admin</title>
+  <link rel="icon" type="image/png" href="../assets/logo/taqwa-logo.png">
+
+  <!-- Design System & Icons -->
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* CMS specific modal and badges */
+    .blog-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 13, 20, 0.75);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+    .blog-modal-box {
+      background: #FFFFFF;
+      border-radius: 12px;
+      max-width: 850px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      border: 1px solid #E2E8F0;
+      animation: modalFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.96) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .blog-modal-header {
+      padding: 1.25rem 1.75rem;
+      border-bottom: 1px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .blog-modal-body {
+      padding: 1.75rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .blog-modal-footer {
+      padding: 1rem 1.75rem;
+      border-top: 1px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      background: #F8FAFC;
+      border-radius: 0 0 12px 12px;
+    }
+    .article-thumb-preview {
+      width: 80px;
+      height: 56px;
+      border-radius: 6px;
+      object-fit: cover;
+      background: #0F172A;
+      border: 1px solid #CBD5E1;
+    }
+    .badge-status-published {
+      background: #DCFCE7;
+      color: #16A34A;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-status-draft {
+      background: #F1F5F9;
+      color: #64748B;
+      padding: 3px 8px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .badge-category {
+      background: #FEE2E2;
+      color: #DC2626;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="admin-layout">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar" id="adminSidebar">
+      <a href="index.html" class="sidebar-brand">
+        <img src="../assets/logo/taqwa-logo.png" alt="Taqwa Motors" class="sidebar-logo-img" onerror="this.style.display='none'">
+        <div class="sidebar-brand-text">
+          <span class="sidebar-brand-name">TAQWA <span class="red-accent">MOTORS</span></span>
+          <span class="sidebar-brand-badge">Dealership Portal</span>
+        </div>
+      </a>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">Dealership Management</div>
+        <a href="index.html" class="sidebar-link">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="inventory.html" class="sidebar-link">
+          <i data-lucide="car"></i>
+          <span>Inventory</span>
+        </a>
+        <a href="customers.html" class="sidebar-link">
+          <i data-lucide="users"></i>
+          <span>Customers</span>
+        </a>
+        <a href="blog.html" class="sidebar-link active">
+          <i data-lucide="newspaper"></i>
+          <span>Blog CMS</span>
+        </a>
+        <a href="#" class="sidebar-link" onclick="alert('Sales & Invoicing is directly accessible inside vehicle operations & customer records.')">
+          <i data-lucide="badge-dollar-sign"></i>
+          <span>Sales</span>
+        </a>
+        <a href="#" class="sidebar-link" onclick="alert('Reports & Analytics is scheduled for Phase 4B.')">
+          <i data-lucide="bar-chart-3"></i>
+          <span>Reports</span>
+          <span class="badge-coming">Soon</span>
+        </a>
+
+        <div class="nav-section-title" style="margin-top: 1rem;">System</div>
+        <a href="../blog.html" target="_blank" class="sidebar-link">
+          <i data-lucide="external-link"></i>
+          <span>View Public Blog Hub</span>
+        </a>
+        <a href="../index.html" target="_blank" class="sidebar-link">
+          <i data-lucide="external-link"></i>
+          <span>View Public Website</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-widget">
+          <div class="user-avatar" id="sidebarUserAvatar">A</div>
+          <div class="user-info">
+            <div class="user-name" id="sidebarUserName">Loading...</div>
+            <span class="user-role-badge" id="sidebarUserRole">Owner</span>
+          </div>
+        </div>
+        <button id="logoutBtn" class="btn-logout" style="width: 100%; justify-content: center;">
+          <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <!-- Header -->
+      <header class="admin-header">
+        <div class="header-left">
+          <button id="menuToggleBtn" class="menu-toggle-btn">
+            <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+          </button>
+          <div class="page-title-wrap">
+            <h1>Blog & Automotive News CMS</h1>
+            <p>Publish buyer guides, market insights, and Pakistan automotive industry news</p>
+          </div>
+        </div>
+
+        <div class="header-right">
+          <div class="header-time-pill" id="liveClock">--:-- PKT</div>
+          <button type="button" class="btn-primary" onclick="openCreateArticleModal()">
+            <i data-lucide="plus-circle" style="width: 18px; height: 18px;"></i>
+            <span>Create Article</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <div class="admin-content">
+        <!-- KPI Row -->
+        <div class="kpi-grid" style="margin-bottom: 1.5rem;">
+          <div class="kpi-card kpi-total">
+            <div class="kpi-info">
+              <p>Total Articles</p>
+              <div class="kpi-number" id="kpiTotalArticles">0</div>
+            </div>
+            <div class="kpi-icon-wrap"><i data-lucide="newspaper"></i></div>
+          </div>
+          <div class="kpi-card kpi-available">
+            <div class="kpi-info">
+              <p>Published Articles</p>
+              <div class="kpi-number" id="kpiPublishedArticles">0</div>
+            </div>
+            <div class="kpi-icon-wrap"><i data-lucide="check-circle-2"></i></div>
+          </div>
+          <div class="kpi-card kpi-sold">
+            <div class="kpi-info">
+              <p>Draft Articles</p>
+              <div class="kpi-number" id="kpiDraftArticles">0</div>
+            </div>
+            <div class="kpi-icon-wrap"><i data-lucide="file-edit"></i></div>
+          </div>
+          <div class="kpi-card kpi-reserved">
+            <div class="kpi-info">
+              <p>Categories</p>
+              <div class="kpi-number" id="kpiCategoriesCount">5</div>
+            </div>
+            <div class="kpi-icon-wrap"><i data-lucide="layers"></i></div>
+          </div>
+        </div>
+
+        <div class="content-card">
+          <!-- Filter Toolbar -->
+          <div class="filter-toolbar">
+            <div class="search-main-row">
+              <div class="search-input-wrap">
+                <i data-lucide="search"></i>
+                <input 
+                  type="text" 
+                  id="blogSearchInput" 
+                  class="admin-input-search" 
+                  placeholder="Search articles by title, tags, or author..."
+                >
+              </div>
+              <button type="button" id="resetBlogFiltersBtn" class="btn-secondary" title="Reset filters">
+                <i data-lucide="rotate-ccw" style="width: 16px; height: 16px;"></i>
+                <span>Reset</span>
+              </button>
+            </div>
+
+            <form id="blogFilterForm" class="filter-grid-row" onsubmit="return false;">
+              <div>
+                <select id="filterBlogCategory" class="admin-select">
+                  <option value="">All Categories</option>
+                  <option value="Industry News">Industry News</option>
+                  <option value="Buying Guides">Buying Guides</option>
+                  <option value="Car Maintenance">Car Maintenance</option>
+                  <option value="Reviews & Tests">Reviews & Tests</option>
+                  <option value="Market Insights">Market Insights</option>
+                </select>
+              </div>
+
+              <div>
+                <select id="filterBlogStatus" class="admin-select">
+                  <option value="">All Statuses</option>
+                  <option value="published">Published</option>
+                  <option value="draft">Draft</option>
+                </select>
+              </div>
+            </form>
+          </div>
+
+          <!-- Header summary bar -->
+          <div class="card-header-bar" style="background: rgba(0,0,0,0.02);">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <h2>Article Library</h2>
+              <span class="stock-tag" id="articleCountBadge">0 Articles</span>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div id="blogEmptyState" class="empty-state-box" style="display: none;">
+            <i data-lucide="newspaper" class="empty-icon"></i>
+            <h3 class="empty-title">No Articles Found</h3>
+            <p style="font-size: 0.88rem; max-width: 420px; margin: 0 auto 1.5rem;">Create helpful Pakistani automotive buying guides and news updates to engage customers.</p>
+            <button type="button" class="btn-primary" onclick="openCreateArticleModal()">
+              <i data-lucide="plus" style="width: 18px; height: 18px;"></i>
+              <span>Create First Article</span>
+            </button>
+          </div>
+
+          <!-- Articles Table -->
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Article</th>
+                  <th>Category</th>
+                  <th>Author</th>
+                  <th>Date & Read Time</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="blogTableBody">
+                <tr>
+                  <td colspan="6" style="text-align: center; color: var(--admin-text-muted); padding: 3rem;">
+                    Loading article library...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Article Editor Modal -->
+  <div id="articleModal" class="blog-modal-backdrop">
+    <div class="blog-modal-box">
+      <div class="blog-modal-header">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="file-edit" style="width: 20px; height: 20px; color: var(--admin-primary);"></i>
+          <h2 id="modalTitle" style="font-size: 1.15rem; font-weight: 700; color: var(--admin-text-main);">Create Article</h2>
+        </div>
+        <button type="button" class="action-btn-icon" onclick="closeArticleModal()" title="Close">
+          <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+        </button>
+      </div>
+
+      <div class="blog-modal-body">
+        <form id="articleForm" onsubmit="handleArticleFormSubmit(event)">
+          <input type="hidden" id="articleId">
+
+          <div class="form-grid-2">
+            <div class="form-group" style="grid-column: span 2;">
+              <label for="articleTitle" class="form-label">Article Title <span class="required-star">*</span></label>
+              <input type="text" id="articleTitle" class="admin-input" placeholder="e.g. Complete Guide to Buying a Verified Japanese Imported Car in Pakistan (2026)" required oninput="generateSlugFromTitle()">
+            </div>
+
+            <div class="form-group">
+              <label for="articleSlug" class="form-label">URL Slug <span class="required-star">*</span></label>
+              <input type="text" id="articleSlug" class="admin-input" placeholder="e.g. guide-buying-japanese-car-pakistan-2026" required>
+            </div>
+
+            <div class="form-group">
+              <label for="articleCategory" class="form-label">Category <span class="required-star">*</span></label>
+              <select id="articleCategory" class="admin-select" required>
+                <option value="Buying Guides">Buying Guides</option>
+                <option value="Industry News">Industry News</option>
+                <option value="Car Maintenance">Car Maintenance</option>
+                <option value="Reviews & Tests">Reviews & Tests</option>
+                <option value="Market Insights">Market Insights</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="articleAuthor" class="form-label">Author Name</label>
+              <input type="text" id="articleAuthor" class="admin-input" placeholder="e.g. Taqwa Motors Editorial Desk" value="Taqwa Motors Editorial Desk">
+            </div>
+
+            <div class="form-group">
+              <label for="articleReadTime" class="form-label">Estimated Read Time</label>
+              <input type="text" id="articleReadTime" class="admin-input" placeholder="e.g. 5 min read" value="4 min read">
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+              <label for="articleImage" class="form-label">Cover Image URL</label>
+              <input type="text" id="articleImage" class="admin-input" placeholder="e.g. assets/cars/fortuner_legender.jpg or https://..." value="assets/cars/fortuner_legender.jpg">
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+              <label for="articleTags" class="form-label">Tags (comma-separated)</label>
+              <input type="text" id="articleTags" class="admin-input" placeholder="e.g. Toyota, Fortuner, Japanese Auction, Car Import, Pakistan">
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+              <label for="articleExcerpt" class="form-label">Summary / Excerpt (Short description for card & search results) <span class="required-star">*</span></label>
+              <textarea id="articleExcerpt" class="admin-textarea" rows="2" placeholder="Brief summary of the article..." required></textarea>
+            </div>
+
+            <div class="form-group" style="grid-column: span 2;">
+              <label for="articleContent" class="form-label">Article Body Content (Markdown / HTML supported) <span class="required-star">*</span></label>
+              <textarea id="articleContent" class="admin-textarea" rows="8" placeholder="Write your full article body here..." required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="articleSeoTitle" class="form-label">SEO Meta Title (Optional)</label>
+              <input type="text" id="articleSeoTitle" class="admin-input" placeholder="Custom Google title...">
+            </div>
+
+            <div class="form-group">
+              <label for="articleStatus" class="form-label">Publishing Status</label>
+              <select id="articleStatus" class="admin-select">
+                <option value="published">Published (Public)</option>
+                <option value="draft">Draft (Private)</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="blog-modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeArticleModal()">Cancel</button>
+        <button type="button" class="btn-primary" onclick="document.getElementById('articleForm').requestSubmit()">
+          <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+          <span>Save Article</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="../js/data.js"></script>
+  <script src="../js/supabase-client.js"></script>
+  <script src="js/admin-auth.js"></script>
+  <script src="js/admin-blog.js"></script>
+</body>
+</html>

@@ -33,8 +33,8 @@
     "@context": "https://schema.org",
     "@type": "AutoDealer",
     "name": "Taqwa Motors",
-    "image": "assets/logo/taqwa-logo.svg",
-    "slogan": "Where Trust Drives Everything",
+    "image": "assets/logo/taqwa-logo.png",
+    "slogan": "BUY • SELL • LEASE",
     "description": "Premium car dealership in Rawalpindi offering certified used cars, imported Japanese vehicles, and transparent automotive trading.",
     "address": {
       "@type": "PostalAddress",
@@ -68,7 +68,7 @@
         </div>
         <div class="brand-text-block">
           <span class="brand-name">TAQWA <span class="red-accent">MOTORS</span></span>
-          <span class="brand-tagline-nav">Where Trust Drives Everything</span>
+          <span class="brand-tagline-nav">BUY • SELL • LEASE</span>
         </div>
       </a>
 
@@ -76,6 +76,7 @@
       <ul class="nav-menu" id="navMenu">
         <li><a href="#home" class="nav-link active">Home</a></li>
         <li><a href="#inventory" class="nav-link">Inventory</a></li>
+        <li><a href="blog.html" class="nav-link">Blog & News</a></li>
         <li><a href="#trust-pillars" class="nav-link">Why Choose Us</a></li>
         <li><a href="#services" class="nav-link">Services</a></li>
         <li><a href="#calculator" class="nav-link">EMI Calculator</a></li>
@@ -117,19 +118,9 @@
   </nav>
 
   <!-- ========================================================================
-       2. HERO SECTION WITH BACKGROUND VIDEO
+       2. HERO SECTION (SOLID LUXURY DARK AUTOMOTIVE THEME)
        ======================================================================== -->
   <section class="hero-section" id="home">
-    <!-- Background Video -->
-    <div class="hero-video-container">
-      <video class="hero-video" autoplay muted loop playsinline poster="assets/cars/fortuner_legender.jpg">
-        <source src="Silk_fabric_floating_around_SUV_202609040652.mp4" type="video/mp4">
-        Your browser does not support HTML5 video.
-      </video>
-    </div>
-
-    <!-- Luxury Overlay -->
-    <div class="hero-overlay"></div>
     <div class="hero-radial-glow"></div>
 
     <div class="container hero-content">
@@ -142,7 +133,7 @@
       <!-- Main Headline & Brand Tagline -->
       <h1 class="hero-headline reveal-on-scroll">
         TAQWA MOTORS
-        <span class="hero-tagline-quote">“Where Trust Drives Everything”</span>
+        <span class="hero-tagline-quote">BUY • SELL • LEASE</span>
       </h1>
 
       <p class="hero-description reveal-on-scroll">
@@ -157,11 +148,11 @@
         </a>
         <a href="https://wa.me/923335406173?text=Assalam-o-Alaikum%20Taqwa%20Motors,%20I%20am%20looking%20for%20a%20car%20in%20Rawalpindi.%20Please%20guide%20me." target="_blank" rel="noopener noreferrer" class="btn btn-whatsapp btn-lg glow-hover">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
-          WhatsApp (0333-5406173)
+          WhatsApp Us
         </a>
       </div>
 
-      <!-- Hero Quick Search Widget -->
+      <!-- Hero Quick Search Widget (Location + Make + Budget) -->
       <div class="hero-search-box reveal-on-scroll">
         <form class="hero-search-form" id="heroQuickSearchForm">
           <div class="search-field">
@@ -174,17 +165,26 @@
               <option value="Hyundai">Hyundai</option>
               <option value="Haval">Haval</option>
               <option value="Suzuki">Suzuki</option>
+              <option value="Nissan">Nissan</option>
             </select>
           </div>
 
           <div class="search-field">
-            <label for="heroTypeSelect">Body Type</label>
-            <select id="heroTypeSelect">
-              <option value="all">All Body Types</option>
-              <option value="SUV">Luxury SUV & 4x4</option>
-              <option value="Sedan">Executive Sedan</option>
-              <option value="Crossover">Crossover & Hybrid</option>
-              <option value="Hatchback">Fuel Saver Hatchback</option>
+            <label for="heroProvinceSelect">Province (Reg.)</label>
+            <select id="heroProvinceSelect">
+              <option value="all">All Provinces</option>
+              <option value="Punjab">Punjab</option>
+              <option value="Khyber Pakhtunkhwa (KPK)">KPK</option>
+              <option value="Sindh">Sindh</option>
+              <option value="Balochistan">Balochistan</option>
+              <option value="Islamabad (ICT)">Islamabad (ICT)</option>
+            </select>
+          </div>
+
+          <div class="search-field">
+            <label for="heroCitySelect">City</label>
+            <select id="heroCitySelect" disabled>
+              <option value="all">Select Province First</option>
             </select>
           </div>
 
@@ -192,6 +192,7 @@
             <label for="heroPriceSelect">Budget Range</label>
             <select id="heroPriceSelect">
               <option value="all">Any Budget</option>
+              <option value="3000000">Under PKR 30 Lacs</option>
               <option value="5000000">Under PKR 50 Lacs</option>
               <option value="10000000">Under PKR 1.0 Crore</option>
               <option value="20000000">Under PKR 2.0 Crore</option>
@@ -250,10 +251,21 @@
         <button class="tab-btn featured-tab-btn" data-category="all">All Stock</button>
       </div>
 
+      <!-- Mobile Compact Filter Toggle Button (Requirement 8) -->
+      <div class="mobile-filter-bar reveal-on-scroll">
+        <button type="button" class="mobile-filter-toggle-btn" id="mobileFilterToggleBtn" aria-expanded="false">
+          <span class="filter-btn-label">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+            <span>Filter Stock</span>
+          </span>
+          <span class="filter-btn-chevron">▼</span>
+        </button>
+      </div>
+
       <!-- Inventory Layout (Sidebar Filters + Results Grid) -->
       <div class="inventory-layout">
         <!-- Sidebar Filter Engine -->
-        <aside class="inventory-sidebar reveal-on-scroll">
+        <aside class="inventory-sidebar reveal-on-scroll" id="inventorySidebar">
           <div class="sidebar-title-row">
             <h3 class="sidebar-title">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
@@ -273,19 +285,28 @@
               <option value="Hyundai">Hyundai</option>
               <option value="Haval">Haval</option>
               <option value="Suzuki">Suzuki</option>
+              <option value="Nissan">Nissan</option>
             </select>
           </div>
 
-          <!-- Body Type Filter -->
+          <!-- Location Filter (Province) -->
           <div class="filter-group">
-            <label class="filter-group-label" for="filterBodyType">Body Type</label>
-            <select id="filterBodyType" class="sidebar-select">
-              <option value="all">All Body Types</option>
-              <option value="SUV">SUV</option>
-              <option value="Sedan">Sedan</option>
-              <option value="Crossover">Crossover</option>
-              <option value="4x4">4x4 Pickup</option>
-              <option value="Hatchback">Hatchback</option>
+            <label class="filter-group-label" for="filterProvince">Registration Province</label>
+            <select id="filterProvince" class="sidebar-select">
+              <option value="all">All Provinces</option>
+              <option value="Punjab">Punjab</option>
+              <option value="Khyber Pakhtunkhwa (KPK)">KPK</option>
+              <option value="Sindh">Sindh</option>
+              <option value="Balochistan">Balochistan</option>
+              <option value="Islamabad (ICT)">Islamabad (ICT)</option>
+            </select>
+          </div>
+
+          <!-- Location Filter (City) -->
+          <div class="filter-group">
+            <label class="filter-group-label" for="filterCity">Registration City</label>
+            <select id="filterCity" class="sidebar-select" disabled>
+              <option value="all">Select Province First</option>
             </select>
           </div>
 
@@ -296,7 +317,7 @@
               <span id="sidebarPriceVal" style="color: var(--primary-red); font-weight:800;">PKR 10 Crore</span>
             </div>
             <div class="price-slider-wrapper">
-              <input type="range" class="price-range-slider" id="sidebarPriceRange" min="2000" max="100000000" step="100000" value="100000000">
+              <input type="range" class="price-range-slider" id="sidebarPriceRange" min="200000" max="100000000" step="100000" value="100000000">
               <div class="price-values-row">
                 <span>Any</span>
                 <span>10 Crore</span>
@@ -309,10 +330,12 @@
             <label class="filter-group-label" for="filterYear">Model Year</label>
             <select id="filterYear" class="sidebar-select">
               <option value="all">All Years</option>
+              <option value="2025">2025</option>
               <option value="2024">2024</option>
               <option value="2023">2023</option>
               <option value="2022">2022</option>
               <option value="2021">2021</option>
+              <option value="2020">2020</option>
             </select>
           </div>
 
@@ -324,6 +347,7 @@
               <option value="Petrol">Petrol</option>
               <option value="Hybrid">Hybrid</option>
               <option value="Diesel">Diesel</option>
+              <option value="Electric">Electric</option>
             </select>
           </div>
 
@@ -337,17 +361,6 @@
               <option value="Manual">Manual</option>
             </select>
           </div>
-
-          <!-- Registration City -->
-          <div class="filter-group">
-            <label class="filter-group-label" for="filterRegCity">Registration</label>
-            <select id="filterRegCity" class="sidebar-select">
-              <option value="all">All Cities</option>
-              <option value="Islamabad">Islamabad</option>
-              <option value="Rawalpindi">Rawalpindi</option>
-              <option value="Unregistered">Unregistered (JDM)</option>
-            </select>
-          </div>
         </aside>
 
         <!-- Inventory Main Content Area -->
@@ -356,7 +369,7 @@
           <div class="inventory-top-bar reveal-on-scroll">
             <div class="inventory-search-input-wrapper">
               <span class="inventory-search-icon">🔍</span>
-              <input type="text" id="inventorySearchInput" class="inventory-search-input" placeholder="Search by model, make, or condition...">
+              <input type="text" id="inventorySearchInput" class="inventory-search-input" placeholder="Search by model, make, city, or chassis...">
             </div>
 
             <div class="inventory-sort-controls">
@@ -659,9 +672,35 @@
   </section>
 
   <!-- ========================================================================
-       10. CONTACT & SHOWROOM LOCATION (REQUIREMENT 17: ACCURATE LOCATION & MAP)
+       10. AUTOMOTIVE NEWS & POLICY UPDATES (BLOG PREVIEW)
        ======================================================================== -->
-  <section class="section section-light" id="contact">
+  <section class="section section-light" id="blog-preview">
+    <div class="container">
+      <div class="section-header reveal-on-scroll">
+        <span class="section-tag tag-blue">Automotive News & Guides</span>
+        <h2 class="section-title">Latest Dealership <span class="text-red">News & Insights</span></h2>
+        <p class="section-subtitle">
+          Stay updated with the latest Pakistani automotive policy changes, import taxes, Japanese auction sheet guides, and vehicle reviews.
+        </p>
+      </div>
+
+      <div class="blog-grid" id="homepageBlogGrid">
+        <!-- Rendered dynamically by js/app.js -->
+      </div>
+
+      <div style="text-align: center; margin-top: 36px;" class="reveal-on-scroll">
+        <a href="blog.html" class="btn btn-primary btn-lg glow-hover">
+          <span>Explore All Automotive Articles & Policy Guides</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================================================
+       11. CONTACT & SHOWROOM LOCATION
+       ======================================================================== -->
+  <section class="section" id="contact">
     <div class="container">
       <div class="section-header reveal-on-scroll">
         <span class="section-tag tag-dark">Visit Showroom</span>
@@ -774,7 +813,7 @@
   </section>
 
   <!-- ========================================================================
-       11. PREMIUM FOOTER
+       12. PREMIUM FOOTER
        ======================================================================== -->
   <footer class="footer">
     <div class="container">
@@ -790,7 +829,7 @@
             </div>
           </a>
           <p>
-            “Where Trust Drives Everything” — Rawalpindi’s premier dealership for certified pre-owned and verified Japanese imported cars.
+            “BUY • SELL • LEASE” — Rawalpindi’s premier dealership for certified pre-owned and verified Japanese imported cars.
           </p>
         </div>
 
@@ -800,6 +839,7 @@
           <ul class="footer-links-list">
             <li><a href="#home" class="footer-link">Home</a></li>
             <li><a href="#inventory" class="footer-link">Available Inventory</a></li>
+            <li><a href="blog.html" class="footer-link" style="color: #FF8A80; font-weight: 700;">📰 Blog & Auto News</a></li>
             <li><a href="#services" class="footer-link">Dealership Services</a></li>
             <li><a href="#calculator" class="footer-link">EMI Loan Calculator</a></li>
             <li><a href="#why-us" class="footer-link">Why Choose Us</a></li>
@@ -848,7 +888,7 @@
           © 2026 Taqwa Motors. All Rights Reserved. Rawalpindi, Pakistan.
         </div>
         <div style="display:flex; align-items:center; gap:16px; flex-wrap: wrap;">
-          <span>Where Trust Drives Everything</span>
+          <span>BUY • SELL • LEASE</span>
           <a href="admin/login.html" class="btn btn-outline-red btn-sm" style="background: rgba(211,47,47,0.15); color: #FFFFFF; padding: 5px 12px; font-size: 0.8rem;" title="Authorized Dealership Staff & Admin Portal">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             Admin Portal
