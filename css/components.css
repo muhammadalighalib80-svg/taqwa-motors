@@ -2722,3 +2722,280 @@
   color: var(--text-dark);
 }
 
+/* --------------------------------------------------------------------------
+   FOUNDER & LEADERSHIP SHOWCASE (MALIK QAISER)
+   -------------------------------------------------------------------------- */
+.founder-showcase-section {
+  background: linear-gradient(180deg, var(--bg-white) 0%, var(--bg-light) 50%, var(--bg-white) 100%);
+  padding: clamp(50px, 6vw, 85px) 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.founder-card-wrapper {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  padding: clamp(24px, 4vw, 48px);
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  grid-template-columns: minmax(300px, 400px) 1fr;
+  gap: clamp(24px, 4vw, 52px);
+  align-items: center;
+  position: relative;
+}
+
+.founder-card-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--primary-red) 0%, var(--brand-blue-accent) 100%);
+  border-top-left-radius: var(--radius-xl);
+  border-bottom-left-radius: var(--radius-xl);
+}
+
+.founder-image-col {
+  position: relative;
+  width: 100%;
+}
+
+.founder-image-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.16);
+  border: 3px solid #FFFFFF;
+  background: #0F172A;
+}
+
+.founder-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.founder-image-frame:hover .founder-portrait-img {
+  transform: scale(1.03);
+}
+
+.founder-image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0) 65%, rgba(11, 17, 32, 0.8) 100%);
+  pointer-events: none;
+}
+
+.founder-experience-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-left: 3px solid var(--primary-red);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+}
+
+.founder-experience-badge .badge-icon-wrap {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--primary-red-light);
+  color: #EF4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.founder-experience-badge .badge-text-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.founder-experience-badge .badge-years {
+  font-family: var(--font-heading);
+  font-size: 0.98rem;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.1;
+}
+
+.founder-experience-badge .badge-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.founder-role-tag {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  right: 14px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 2;
+}
+
+.founder-role-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10B981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.founder-content-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.founder-header-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.founder-title {
+  font-size: clamp(2rem, 3.2vw, 2.6rem);
+  font-weight: 900;
+  color: var(--text-dark);
+  line-height: 1.15;
+}
+
+.founder-tagline {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--primary-red);
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.founder-body-text {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.founder-lead-para {
+  font-size: 1.05rem;
+  color: var(--text-dark);
+  line-height: 1.7;
+}
+
+.founder-secondary-para {
+  font-size: 0.95rem;
+  color: var(--text-dark-secondary);
+  line-height: 1.7;
+}
+
+.founder-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.founder-pillar-card {
+  background: var(--bg-light);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: var(--transition-fast);
+}
+
+.founder-pillar-card:hover {
+  background: #FFFFFF;
+  border-color: rgba(211, 47, 47, 0.35);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-2px);
+}
+
+.pillar-bullet-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-red-light);
+  border: 1px solid rgba(211, 47, 47, 0.2);
+  color: var(--primary-red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pillar-bullet-info h4 {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin-bottom: 2px;
+}
+
+.pillar-bullet-info p {
+  font-size: 0.76rem;
+  color: var(--text-dark-muted);
+  line-height: 1.3;
+}
+
+.founder-actions-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+@media (max-width: 991px) {
+  .founder-card-wrapper {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+  
+  .founder-image-col {
+    max-width: 380px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .founder-pillars-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .founder-actions-row .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+
