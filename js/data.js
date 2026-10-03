@@ -3,7 +3,7 @@
  * Rawalpindi, Pakistan
  * Phone / WhatsApp: 0333-5406173
  * Showroom: Range Road, Chowk, Shalley Valley, Rawalpindi 46000, Pakistan
- * Google Maps: https://maps.app.goo.gl/vJhtE2vLmomiwnxz7?g_st=ac
+ * Google Maps: https://www.google.com/maps/place/Taqwa+Motors/@33.5996875,73.0143125,17z/data=!3m2!1e3!4b1!4m6!3m5!1s0x38df9412fbe061a7:0x4d828daa0413021b!8m2!3d33.5996875!4d73.0143125!16s%2Fg%2F11cmcvd9k9
  * 
  * Note: Vehicle Inventory is synced dynamically from the Supabase database.
  */
