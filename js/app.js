@@ -150,12 +150,12 @@ function transformDbVehicle(row, imagesMap) {
       exterior: ["Alloy Wheels", "LED Headlamps", "Fog Lamps", "Retractable Mirrors"]
     },
     inspection: {
-      body: "Inspected & Verified",
-      engine: "100% Health & Diagnostics Clear",
-      suspension: "Passed 150-Point Technical Check",
-      interior: "Clean Verified",
-      tires: "Good Tread Life Remaining",
-      score: row.condition || "Verified Quality"
+      body: "",
+      engine: "",
+      suspension: "",
+      interior: "",
+      tires: "",
+      score: row.condition || ""
     }
   };
 }
@@ -315,15 +315,15 @@ function renderInventoryGrid() {
     return true;
   });
 
-  // Sorting: Prioritize Featured Vehicles First (Requirement 6)
+  // Sorting: Prioritize Featured Vehicles First (Requirement 8)
   if (currentSortBy === 'price-asc') {
-    list.sort((a, b) => a.price - b.price);
+    list.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || a.price - b.price);
   } else if (currentSortBy === 'price-desc') {
-    list.sort((a, b) => b.price - a.price);
+    list.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || b.price - a.price);
   } else if (currentSortBy === 'year-desc') {
-    list.sort((a, b) => b.year - a.year);
+    list.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || b.year - a.year);
   } else if (currentSortBy === 'mileage-asc') {
-    list.sort((a, b) => a.mileage - b.mileage);
+    list.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) || a.mileage - b.mileage);
   } else {
     // Default Featured First, then newest
     list.sort((a, b) => {
@@ -500,8 +500,8 @@ function openCarModal(carId) {
       <div class="spec-matrix-item"><div class="spec-matrix-label">Model Year</div><div class="spec-matrix-val">${car.year}</div></div>
     `;
 
-    if (car.city || car.province) {
-      matrixHtml += `<div class="spec-matrix-item"><div class="spec-matrix-label">Registration Location</div><div class="spec-matrix-val" style="color: var(--primary-red); font-weight:800;">${[car.city, car.province].filter(Boolean).join(', ')}</div></div>`;
+    if (car.city || car.registrationCity) {
+      matrixHtml += `<div class="spec-matrix-item"><div class="spec-matrix-label">Registration City</div><div class="spec-matrix-val" style="color: var(--primary-red); font-weight:800;">${car.city || car.registrationCity}</div></div>`;
     }
 
     if (car.yearOfImport) {
@@ -975,25 +975,25 @@ async function loadPublicInventoryFromSupabase() {
       return;
     }
 
-    // Fetch from vehicles or public_inventory view
+    // Fetch from public_inventory view or vehicles explicitly selecting public fields
     let dbVehicles = null;
     
-    const { data: vData, error: vErr } = await supabase
-      .from('vehicles')
+    const { data: pubData, error: pubErr } = await supabase
+      .from('public_inventory')
       .select('*')
       .order('featured', { ascending: false })
       .order('created_at', { ascending: false });
 
-    if (!vErr && vData) {
-      dbVehicles = vData;
+    if (!pubErr && pubData) {
+      dbVehicles = pubData;
     } else {
-      const { data: pubData, error: pubErr } = await supabase
-        .from('public_inventory')
-        .select('*')
+      const { data: vData, error: vErr } = await supabase
+        .from('vehicles')
+        .select('id, stock_number, make, model, variant, year, registration_number, chassis_number, mileage, fuel_type, transmission, color, condition, price, status, featured, description, created_at, updated_at')
         .order('featured', { ascending: false })
         .order('created_at', { ascending: false });
-      if (!pubErr && pubData) {
-        dbVehicles = pubData;
+      if (!vErr && vData) {
+        dbVehicles = vData;
       }
     }
 

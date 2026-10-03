@@ -157,11 +157,12 @@ function renderVehicleOverview(v) {
   if (document.getElementById('specColor')) document.getElementById('specColor').textContent = v.color || 'Standard';
   if (document.getElementById('specFeatured')) document.getElementById('specFeatured').textContent = v.featured ? 'Yes (Featured)' : 'Standard';
 
-  // Private IDs
+  // Private IDs & Notes
   if (document.getElementById('privateRegNumber')) document.getElementById('privateRegNumber').textContent = v.registration_number || 'Unregistered';
   if (document.getElementById('privateChassisNumber')) document.getElementById('privateChassisNumber').textContent = v.chassis_number || 'Not Recorded';
   if (document.getElementById('privateCreatedDate')) document.getElementById('privateCreatedDate').textContent = new Date(v.created_at).toLocaleString();
   if (document.getElementById('privateUpdatedDate')) document.getElementById('privateUpdatedDate').textContent = new Date(v.updated_at).toLocaleString();
+  if (document.getElementById('privateNoteDisplay')) document.getElementById('privateNoteDisplay').textContent = v.private_note || 'No internal private notes recorded.';
 
   // Description
   if (document.getElementById('detailDescription')) document.getElementById('detailDescription').textContent = cleanDescription || 'No public description recorded.';

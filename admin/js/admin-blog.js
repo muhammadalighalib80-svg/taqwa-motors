@@ -101,15 +101,31 @@ async function loadBlogArticles() {
   }
 
   allArticles = remoteArticles && remoteArticles.length > 0 ? remoteArticles : localArticles;
+  populateCategoryFilterDropdown();
   updateKPIs();
   renderFilteredArticles();
+}
+
+function populateCategoryFilterDropdown() {
+  const categoryFilter = document.getElementById('filterBlogCategory');
+  if (!categoryFilter) return;
+
+  const currentSelection = categoryFilter.value;
+  const categories = Array.from(new Set(allArticles.map(a => (a.category || '').trim()).filter(Boolean)));
+
+  let html = `<option value="">All Categories</option>`;
+  categories.forEach(cat => {
+    html += `<option value="${cat}" ${currentSelection === cat ? 'selected' : ''}>${cat}</option>`;
+  });
+
+  categoryFilter.innerHTML = html;
 }
 
 function updateKPIs() {
   const total = allArticles.length;
   const published = allArticles.filter(a => a.status === 'published').length;
   const drafts = allArticles.filter(a => a.status === 'draft').length;
-  const uniqueCategories = new Set(allArticles.map(a => a.category)).size;
+  const uniqueCategories = new Set(allArticles.map(a => (a.category || '').trim()).filter(Boolean)).size;
 
   const totalEl = document.getElementById('kpiTotalArticles');
   const publishedEl = document.getElementById('kpiPublishedArticles');
@@ -120,7 +136,7 @@ function updateKPIs() {
   if (totalEl) totalEl.textContent = total;
   if (publishedEl) publishedEl.textContent = published;
   if (draftsEl) draftsEl.textContent = drafts;
-  if (catEl) catEl.textContent = uniqueCategories || 5;
+  if (catEl) catEl.textContent = uniqueCategories || 0;
   if (countBadge) countBadge.textContent = `${total} Articles`;
 }
 
@@ -138,7 +154,7 @@ function renderFilteredArticles() {
       if (!matchTitle && !matchAuthor && !matchTags) return false;
     }
 
-    if (currentBlogFilters.category && a.category !== currentBlogFilters.category) {
+    if (currentBlogFilters.category && (a.category || '').trim() !== currentBlogFilters.category) {
       return false;
     }
 
@@ -161,7 +177,6 @@ function renderFilteredArticles() {
     const isPublished = a.status === 'published';
     const cleanImg = a.image_url || '../assets/cars/fortuner_legender.jpg';
     const publishDate = a.publish_date || (a.created_at ? new Date(a.created_at).toISOString().split('T')[0] : '2026-03-18');
-    const readTime = a.read_time || '4 min read';
 
     return `
       <tr>
@@ -179,14 +194,13 @@ function renderFilteredArticles() {
           </div>
         </td>
         <td>
-          <span class="badge-category">${a.category || 'Industry News'}</span>
+          <span class="badge-category">${(a.category || 'Automotive').trim()}</span>
         </td>
         <td>
           <div style="font-size: 0.84rem; font-weight: 600; color: var(--admin-text-main);">${a.author || 'Taqwa Editorial'}</div>
         </td>
         <td>
           <div style="font-size: 0.82rem; color: var(--admin-text-main);">${publishDate}</div>
-          <div style="font-size: 0.72rem; color: var(--admin-text-muted);">${readTime}</div>
         </td>
         <td>
           <button 
@@ -224,9 +238,11 @@ function openCreateArticleModal() {
   document.getElementById('articleForm').reset();
   document.getElementById('articleId').value = '';
   document.getElementById('articleAuthor').value = 'Taqwa Motors Editorial Desk';
-  document.getElementById('articleReadTime').value = '4 min read';
+  document.getElementById('articleCategory').value = 'Buying Guides';
   document.getElementById('articleImage').value = 'assets/cars/fortuner_legender.jpg';
   document.getElementById('articleStatus').value = 'published';
+  document.getElementById('blogUploadStatus').textContent = 'No file chosen';
+  updateBlogImagePreview('assets/cars/fortuner_legender.jpg');
 
   const modal = document.getElementById('articleModal');
   if (modal) modal.style.display = 'flex';
@@ -241,19 +257,122 @@ function openEditArticleModal(idOrSlug) {
   document.getElementById('articleId').value = article.id || article.slug;
   document.getElementById('articleTitle').value = article.title || '';
   document.getElementById('articleSlug').value = article.slug || '';
-  document.getElementById('articleCategory').value = article.category || 'Industry News';
+  document.getElementById('articleCategory').value = (article.category || 'Buying Guides').trim();
   document.getElementById('articleAuthor').value = article.author || 'Taqwa Motors Editorial Desk';
-  document.getElementById('articleReadTime').value = article.read_time || '4 min read';
-  document.getElementById('articleImage').value = article.image_url || 'assets/cars/fortuner_legender.jpg';
+  document.getElementById('articleImage').value = article.image_url || article.featured_image || 'assets/cars/fortuner_legender.jpg';
   document.getElementById('articleTags').value = Array.isArray(article.tags) ? article.tags.join(', ') : (article.tags || '');
-  document.getElementById('articleExcerpt').value = article.excerpt || '';
+  document.getElementById('articleExcerpt').value = article.excerpt || article.summary || '';
   document.getElementById('articleContent').value = article.content || '';
   document.getElementById('articleSeoTitle').value = article.seo_title || '';
   document.getElementById('articleStatus').value = article.status || 'published';
+  document.getElementById('blogUploadStatus').textContent = 'Existing image loaded';
+  updateBlogImagePreview(article.image_url || article.featured_image || 'assets/cars/fortuner_legender.jpg');
 
   const modal = document.getElementById('articleModal');
   if (modal) modal.style.display = 'flex';
   lucide.createIcons();
+}
+
+function updateBlogImagePreview(url) {
+  const preview = document.getElementById('blogImagePreview');
+  if (preview) {
+    preview.src = url || 'assets/cars/fortuner_legender.jpg';
+  }
+}
+
+async function handleBlogImageFileSelect(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+  if (!validTypes.includes(file.type)) {
+    alert('Supported image formats are JPG, PNG, or WebP.');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    alert('File size exceeds the 10MB limit.');
+    return;
+  }
+
+  const statusEl = document.getElementById('blogUploadStatus');
+  if (statusEl) statusEl.textContent = `Uploading ${file.name}...`;
+
+  // Local object URL preview immediately
+  const localUrl = URL.createObjectURL(file);
+  updateBlogImagePreview(localUrl);
+
+  const supabase = window.getSupabaseClient();
+  if (!supabase) {
+    document.getElementById('articleImage').value = localUrl;
+    if (statusEl) statusEl.textContent = `Selected: ${file.name}`;
+    return;
+  }
+
+  try {
+    const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+    const storagePath = `blog/${Date.now()}_${cleanName}`;
+    let bucketName = 'blog-images';
+
+    let { data: uploadData, error: uploadErr } = await supabase.storage
+      .from(bucketName)
+      .upload(storagePath, file, { contentType: file.type, upsert: false });
+
+    // Fallback to vehicle-images bucket if blog-images does not exist
+    if (uploadErr && (uploadErr.message?.includes('not found') || uploadErr.statusCode === '404' || uploadErr.error === 'Bucket not found')) {
+      bucketName = 'vehicle-images';
+      const fallbackRes = await supabase.storage
+        .from(bucketName)
+        .upload(`blog/${Date.now()}_${cleanName}`, file, { contentType: file.type, upsert: false });
+      uploadData = fallbackRes.data;
+      uploadErr = fallbackRes.error;
+    }
+
+    if (uploadErr) {
+      console.warn('Storage upload error:', uploadErr);
+      alert('Could not upload image to Supabase storage. Falling back to local URL preview: ' + uploadErr.message);
+      document.getElementById('articleImage').value = localUrl;
+      if (statusEl) statusEl.textContent = `Failed: ${file.name}`;
+      return;
+    }
+
+    const { data: publicData } = supabase.storage.from(bucketName).getPublicUrl(uploadData.path);
+    const finalUrl = publicData.publicUrl;
+
+    document.getElementById('articleImage').value = finalUrl;
+    updateBlogImagePreview(finalUrl);
+    if (statusEl) statusEl.textContent = `Uploaded ✓ (${file.name})`;
+  } catch (err) {
+    console.error('Image upload failed:', err);
+    alert('Image upload failed. Using temporary preview.');
+    document.getElementById('articleImage').value = localUrl;
+  }
+}
+
+// Formatting toolbar helper for Bold, Italic, Link
+function formatBlogText(command) {
+  const textarea = document.getElementById('articleContent');
+  if (!textarea) return;
+
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const selectedText = textarea.value.substring(start, end) || 'Text';
+
+  let replacement = '';
+  if (command === 'bold') {
+    replacement = `<strong>${selectedText}</strong>`;
+  } else if (command === 'italic') {
+    replacement = `<em>${selectedText}</em>`;
+  } else if (command === 'link') {
+    const url = prompt('Enter external hyperlink URL:', 'https://');
+    if (!url) return;
+    // Ensure safe protocol
+    const cleanUrl = (url.startsWith('http://') || url.startsWith('https://')) ? url : `https://${url}`;
+    replacement = `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${selectedText}</a>`;
+  }
+
+  textarea.value = textarea.value.substring(0, start) + replacement + textarea.value.substring(end);
+  textarea.focus();
+  textarea.setSelectionRange(start, start + replacement.length);
 }
 
 function closeArticleModal() {
@@ -281,9 +400,8 @@ async function handleArticleFormSubmit(e) {
   const id = document.getElementById('articleId').value;
   const title = document.getElementById('articleTitle').value.trim();
   const slug = document.getElementById('articleSlug').value.trim();
-  const category = document.getElementById('articleCategory').value;
+  const category = document.getElementById('articleCategory').value.trim(); // Trimmed manual category
   const author = document.getElementById('articleAuthor').value.trim();
-  const read_time = document.getElementById('articleReadTime').value.trim();
   const image_url = document.getElementById('articleImage').value.trim();
   const rawTags = document.getElementById('articleTags').value.trim();
   const tags = rawTags ? rawTags.split(',').map(t => t.trim()).filter(Boolean) : [];
@@ -292,8 +410,8 @@ async function handleArticleFormSubmit(e) {
   const seo_title = document.getElementById('articleSeoTitle').value.trim();
   const status = document.getElementById('articleStatus').value;
 
-  if (!title || !slug || !excerpt || !content) {
-    alert('Please fill in Title, Slug, Summary Excerpt and Body Content.');
+  if (!title || !slug || !category || !excerpt || !content) {
+    alert('Please fill in Title, Slug, Category, Excerpt and Body Content.');
     return;
   }
 
@@ -301,15 +419,17 @@ async function handleArticleFormSubmit(e) {
     id: id || ('blog_' + Date.now()),
     title,
     slug,
-    category,
+    category, // Manual text category
     author,
-    read_time,
     image_url,
+    featured_image: image_url,
     tags,
     excerpt,
+    summary: excerpt,
     content,
     seo_title: seo_title || title,
     status,
+    is_published: status === 'published',
     publish_date: new Date().toISOString().split('T')[0],
     created_at: new Date().toISOString()
   };
@@ -347,6 +467,7 @@ async function handleArticleFormSubmit(e) {
   }
 
   closeArticleModal();
+  populateCategoryFilterDropdown();
   updateKPIs();
   renderFilteredArticles();
   alert('Article successfully saved!');
@@ -358,12 +479,13 @@ async function toggleArticleStatus(idOrSlug) {
 
   const newStatus = article.status === 'published' ? 'draft' : 'published';
   article.status = newStatus;
+  article.is_published = newStatus === 'published';
 
   // Supabase update
   const supabase = window.getSupabaseClient();
   if (supabase && article.id && !article.id.startsWith('blog_')) {
     try {
-      await supabase.from('blog_posts').update({ status: newStatus }).eq('id', article.id);
+      await supabase.from('blog_posts').update({ status: newStatus, is_published: article.is_published }).eq('id', article.id);
     } catch (e) {
       console.warn('Supabase status toggle warning:', e);
     }
@@ -402,6 +524,7 @@ async function confirmDeleteArticle(idOrSlug, title) {
     console.error(e);
   }
 
+  populateCategoryFilterDropdown();
   updateKPIs();
   renderFilteredArticles();
 }
@@ -413,3 +536,7 @@ window.generateSlugFromTitle = generateSlugFromTitle;
 window.handleArticleFormSubmit = handleArticleFormSubmit;
 window.toggleArticleStatus = toggleArticleStatus;
 window.confirmDeleteArticle = confirmDeleteArticle;
+window.handleBlogImageFileSelect = handleBlogImageFileSelect;
+window.updateBlogImagePreview = updateBlogImagePreview;
+window.formatBlogText = formatBlogText;
+

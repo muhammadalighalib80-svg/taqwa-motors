@@ -234,24 +234,10 @@ async function loadVehicleForEdit(vehicleId) {
     const regNum = v.registration_number || '';
     if (document.getElementById('vehicleRegNumber')) document.getElementById('vehicleRegNumber').value = regNum;
     
-    // Detect Province/City from registration string
-    if (typeof PAKISTAN_LOCATIONS !== 'undefined') {
-      for (const [prov, cities] of Object.entries(PAKISTAN_LOCATIONS)) {
-        for (const city of cities) {
-          if (regNum.toLowerCase().includes(city.toLowerCase())) {
-            const provSelect = document.getElementById('vehicleRegProvince');
-            const citySelect = document.getElementById('vehicleRegCity');
-            if (provSelect) {
-              provSelect.value = prov;
-              provSelect.dispatchEvent(new Event('change'));
-              setTimeout(() => {
-                if (citySelect) citySelect.value = city;
-              }, 50);
-            }
-            break;
-          }
-        }
-      }
+    // Set Registration City input
+    const cityInput = document.getElementById('vehicleRegCity');
+    if (cityInput) {
+      cityInput.value = v.registration_city || v.city || '';
     }
 
     if (document.getElementById('vehicleChassisNumber')) document.getElementById('vehicleChassisNumber').value = v.chassis_number || '';
@@ -263,6 +249,7 @@ async function loadVehicleForEdit(vehicleId) {
     if (document.getElementById('vehicleStatus')) document.getElementById('vehicleStatus').value = v.status || 'available';
     if (document.getElementById('vehicleFeatured')) document.getElementById('vehicleFeatured').checked = !!v.featured;
     if (document.getElementById('vehicleDescription')) document.getElementById('vehicleDescription').value = rawDesc;
+    if (document.getElementById('vehiclePrivateNote')) document.getElementById('vehiclePrivateNote').value = v.private_note || '';
 
     // Populate images
     existingImages = v.vehicle_images || [];
@@ -298,6 +285,7 @@ async function handleVehicleFormSubmit(e) {
   const price = parseFloat(document.getElementById('vehiclePrice').value);
   const status = document.getElementById('vehicleStatus')?.value || 'available';
   const featured = document.getElementById('vehicleFeatured')?.checked || false;
+  const private_note = document.getElementById('vehiclePrivateNote')?.value.trim() || null;
   
   let rawDescription = document.getElementById('vehicleDescription')?.value.trim() || '';
   // Clean old tag and attach standard Import metadata tag if import year is specified
@@ -344,7 +332,7 @@ async function handleVehicleFormSubmit(e) {
     let targetVehicleId = editingVehicleId;
 
     if (!isEditMode) {
-      // 1. Insert new vehicle
+      // 1. Insert new vehicle (created_at is set automatically by DB default NOW())
       const { data: newVehicle, error: insertErr } = await supabase
         .from('vehicles')
         .insert({
@@ -364,7 +352,8 @@ async function handleVehicleFormSubmit(e) {
           price,
           status,
           featured,
-          description
+          description,
+          private_note
         })
         .select('id')
         .single();
@@ -380,7 +369,7 @@ async function handleVehicleFormSubmit(e) {
       targetVehicleId = newVehicle.id;
 
     } else {
-      // 2. Update existing vehicle
+      // 2. Update existing vehicle (IMPORTANT: created_at is NEVER passed, preserving 60-day auto-delete timer)
       const { error: updateErr } = await supabase
         .from('vehicles')
         .update({
@@ -399,7 +388,8 @@ async function handleVehicleFormSubmit(e) {
           price,
           status,
           featured,
-          description
+          description,
+          private_note
         })
         .eq('id', targetVehicleId);
 
@@ -408,6 +398,9 @@ async function handleVehicleFormSubmit(e) {
         btn.disabled = false;
         btn.innerHTML = `<i data-lucide="check" style="width:18px;height:18px;"></i> <span>Update Vehicle</span>`;
         lucide.createIcons();
+        return;
+      }
+    }
         return;
       }
     }

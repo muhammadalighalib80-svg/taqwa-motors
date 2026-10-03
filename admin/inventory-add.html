@@ -168,23 +168,8 @@
 
             <div class="form-grid-2">
               <div class="form-group">
-                <label for="vehicleRegProvince" class="form-label">Registration Province</label>
-                <select id="vehicleRegProvince" class="admin-select">
-                  <option value="">Select Province / Territory</option>
-                  <option value="Punjab">Punjab</option>
-                  <option value="Islamabad Capital Territory (ICT)">Islamabad (ICT)</option>
-                  <option value="Sindh">Sindh</option>
-                  <option value="Khyber Pakhtunkhwa (KPK)">KPK</option>
-                  <option value="Balochistan">Balochistan</option>
-                  <option value="Unregistered">Unregistered / Japanese Auction</option>
-                </select>
-              </div>
-
-              <div class="form-group">
                 <label for="vehicleRegCity" class="form-label">Registration City</label>
-                <select id="vehicleRegCity" class="admin-select">
-                  <option value="">Select Registration City</option>
-                </select>
+                <input type="text" id="vehicleRegCity" class="admin-input" placeholder="e.g. Islamabad, Lahore, Rawalpindi, Unregistered">
               </div>
 
               <div class="form-group">
@@ -231,7 +216,7 @@
                 </select>
               </div>
 
-              <div class="form-group">
+              <div class="form-group" style="grid-column: span 2;">
                 <label for="vehicleColor" class="form-label">Exterior Color</label>
                 <input type="text" id="vehicleColor" class="admin-input" placeholder="e.g. Pearl White, Attitude Black, Silver">
               </div>
@@ -242,9 +227,9 @@
           <div class="form-card-section">
             <div class="form-section-title">
               <i data-lucide="tag" style="width: 20px; height: 20px; color: var(--admin-primary);"></i>
-              <span>3. Pricing & Public Visibility</span>
+              <span>3. Pricing, Private Notes & Public Visibility</span>
             </div>
-            <p class="form-section-subtitle">Showroom price and public website listing settings</p>
+            <p class="form-section-subtitle">Showroom price, internal private notes, and public website listing settings</p>
 
             <div class="form-grid-3">
               <div class="form-group">
@@ -268,9 +253,17 @@
                 </label>
               </div>
 
-              <div class="form-group full-width">
+              <div class="form-group full-width" style="grid-column: span 3;">
                 <label for="vehicleDescription" class="form-label">Public Description & Features</label>
-                <textarea id="vehicleDescription" class="admin-textarea" placeholder="Detail the car specifications, Japanese auction grading (e.g. Grade 4.5), package options, sunroof, leather interior, safety features..."></textarea>
+                <textarea id="vehicleDescription" class="admin-textarea" rows="4" placeholder="Detail the car specifications, Japanese auction grading (e.g. Grade 4.5), package options, sunroof, leather interior, safety features..."></textarea>
+              </div>
+
+              <div class="form-group full-width" style="grid-column: span 3; margin-top: 8px;">
+                <label for="vehiclePrivateNote" class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+                  <span>Private Note (Internal Dealership Only)</span>
+                  <span style="font-size: 0.72rem; color: #DC2626; background: #FEE2E2; padding: 2px 8px; border-radius: 4px; font-weight: 700;">🔒 Private - Never Shown to Public</span>
+                </label>
+                <textarea id="vehiclePrivateNote" class="admin-textarea" rows="3" placeholder="Internal vehicle condition notes, seller contact & purchase price, negotiation notes, reminders..."></textarea>
               </div>
             </div>
           </div>

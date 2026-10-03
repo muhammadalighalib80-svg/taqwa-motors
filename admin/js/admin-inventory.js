@@ -163,6 +163,7 @@ async function loadInventory() {
         price,
         status,
         featured,
+        private_note,
         registration_number,
         chassis_number,
         created_at,

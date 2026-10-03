@@ -109,6 +109,60 @@ function renderBlogList() {
     return;
   }
 
+// Strict HTML Sanitizer to prevent stored XSS
+function sanitizeHtml(html) {
+  if (!html) return '';
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    const allowedTags = ['P', 'BR', 'B', 'STRONG', 'I', 'EM', 'U', 'S', 'A', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'UL', 'OL', 'LI', 'BLOCKQUOTE', 'IMG', 'DIV', 'SPAN', 'HR'];
+
+    function cleanNode(node) {
+      const children = Array.from(node.childNodes);
+      for (const child of children) {
+        if (child.nodeType === 1) { // Element node
+          if (!allowedTags.includes(child.nodeName)) {
+            child.remove();
+            continue;
+          }
+          // Remove on* event handlers and dangerous attributes
+          const attrs = Array.from(child.attributes);
+          for (const attr of attrs) {
+            const name = attr.name.toLowerCase();
+            if (name.startsWith('on') || name === 'formaction' || name === 'srcdoc') {
+              child.removeAttribute(attr.name);
+            }
+          }
+          // Sanitize <a> tags
+          if (child.nodeName === 'A') {
+            const href = child.getAttribute('href') || '';
+            if (href.trim().toLowerCase().startsWith('javascript:') || href.trim().toLowerCase().startsWith('data:')) {
+              child.removeAttribute('href');
+            } else {
+              child.setAttribute('target', '_blank');
+              child.setAttribute('rel', 'noopener noreferrer');
+            }
+          }
+          // Sanitize <img> tags
+          if (child.nodeName === 'IMG') {
+            const src = child.getAttribute('src') || '';
+            if (src.trim().toLowerCase().startsWith('javascript:')) {
+              child.removeAttribute('src');
+            }
+          }
+          cleanNode(child);
+        }
+      }
+    }
+
+    cleanNode(doc.body);
+    return doc.body.innerHTML;
+  } catch (e) {
+    console.error('HTML sanitization error:', e);
+    return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  }
+}
+
   container.innerHTML = filtered.map(post => {
     const postDate = new Date(post.created_at).toLocaleDateString('en-PK', {
       month: 'short',
@@ -121,7 +175,6 @@ function renderBlogList() {
         <div class="blog-card-img-wrap">
           <img src="${post.featured_image}" alt="${post.title}" class="blog-card-img" loading="lazy" onerror="this.src='assets/cars/fortuner_legender.jpg'">
           <span class="blog-card-category">${post.category || 'Automotive'}</span>
-          <span class="blog-card-readtime">${post.read_time || '4 min read'}</span>
         </div>
         <div class="blog-card-body">
           <div class="blog-card-date">${postDate} • By ${post.author || 'Taqwa Motors'}</div>
@@ -202,7 +255,6 @@ function openArticleBySlug(slug) {
       <div class="article-header">
         <div class="article-badge-row">
           <span class="section-tag tag-blue" style="margin: 0;">${post.category || 'Automotive News'}</span>
-          <span style="font-size: 0.82rem; color: var(--text-dark-muted); font-weight: 600;">📖 ${post.read_time || '5 min read'}</span>
           <span style="font-size: 0.82rem; color: var(--text-dark-muted); font-weight: 600;">👁️ ${(post.views || 1)} views</span>
         </div>
 
@@ -217,7 +269,7 @@ function openArticleBySlug(slug) {
       <img src="${post.featured_image}" alt="${post.title}" class="article-featured-img" onerror="this.src='assets/cars/fortuner_legender.jpg'">
 
       <div class="article-body">
-        ${post.content}
+        ${sanitizeHtml(post.content)}
       </div>
 
       <!-- Article Social Share Drawer -->
