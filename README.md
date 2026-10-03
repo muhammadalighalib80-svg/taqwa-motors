@@ -31,7 +31,7 @@ A modern, trustworthy, and high-converting car dealership website for **Taqwa Mo
 - **Category**: Car Dealership / Used & Imported Japanese Cars
 - **Showroom Address**: H2X7+VP4 Range Road, Chowk, Shalley Valley, Rawalpindi, 46000, Pakistan
 - **Phone / WhatsApp**: 0333-5406173
-- **Business Hours**: 8:00 AM – 10:00 PM (Open 7 Days a Week)
+- **Business Hours**: 10:00 AM – 10:00 PM (Open 7 Days a Week)
 
 ---
 

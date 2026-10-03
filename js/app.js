@@ -611,7 +611,11 @@ function renderTestimonials() {
       </div>
       <p class="testimonial-text">"${t.comment}"</p>
       <div class="testimonial-author">
-        <img src="${t.avatar}" alt="${t.name}" class="author-avatar" loading="lazy">
+        <div class="author-avatar-silhouette" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+          </svg>
+        </div>
         <div>
           <h4 class="author-name">${t.name}</h4>
           <div class="author-car">${t.carPurchased} • ${t.location}</div>
@@ -703,7 +707,7 @@ function triggerScrollReveal() {
   });
 }
 
-// Check Dealership Live Status (Pakistan Time UTC+5: 8:00 AM - 10:00 PM)
+// Check Dealership Live Status (Pakistan Time UTC+5: 10:00 AM - 10:00 PM)
 function updateDealershipStatus() {
   const statusEl = document.getElementById("navStatusPill");
   if (!statusEl) return;
@@ -713,10 +717,10 @@ function updateDealershipStatus() {
   const pktTime = new Date(utc + (3600000 * 5));
   const hour = pktTime.getHours();
 
-  if (hour >= 8 && hour < 22) {
-    statusEl.innerHTML = `<span class="status-dot"></span> Open Today: 8:00 AM – 10:00 PM`;
+  if (hour >= 10 && hour < 22) {
+    statusEl.innerHTML = `<span class="status-dot"></span> Open Today: 10:00 AM – 10:00 PM`;
   } else {
-    statusEl.innerHTML = `<span class="status-dot" style="background:#F59E0B;"></span> Showroom Opens at 8:00 AM`;
+    statusEl.innerHTML = `<span class="status-dot" style="background:#F59E0B;"></span> Showroom Opens at 10:00 AM`;
   }
 }
 

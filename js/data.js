@@ -118,16 +118,6 @@ const TESTIMONIALS_DATA = [
 // Dealership Services Data
 const SERVICES_DATA = [
   {
-    icon: "shield-check",
-    title: "150-Point Quality Inspection",
-    desc: "Every vehicle undergoes an exhaustive mechanical, electrical, computer diagnostic, and body paint scan before entering our showroom."
-  },
-  {
-    icon: "badge-check",
-    title: "Verified Auction Sheets",
-    desc: "100% authentic, tamper-free Japanese auction certificates and local dealership service logs verified in front of you."
-  },
-  {
     icon: "file-text",
     title: "Biometric & Excise Transfer",
     desc: "Complete end-to-end documentation assistance for Islamabad, Rawalpindi, and Punjab excise transfer and biometric verification."
@@ -161,7 +151,7 @@ const FAQS_DATA = [
   },
   {
     q: "What are your showroom business hours?",
-    a: "We are open 7 days a week from 8:00 AM to 10:00 PM. You can visit anytime or schedule a dedicated VIP test drive and inspection through WhatsApp (0333-5406173)."
+    a: "We are open 7 days a week from 10:00 AM to 10:00 PM. You can visit anytime or schedule a dedicated VIP test drive and inspection through WhatsApp (0333-5406173)."
   },
   {
     q: "Do you offer car trade-ins / vehicle exchange?",
