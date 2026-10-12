@@ -383,6 +383,13 @@
                   <button type="button" class="btn-secondary" style="padding: 2px 10px; font-weight: 800; font-size: 0.85rem;" onclick="formatBlogText('bold')" title="Bold selected text">[B] Bold</button>
                   <button type="button" class="btn-secondary" style="padding: 2px 10px; font-style: italic; font-size: 0.85rem;" onclick="formatBlogText('italic')" title="Italicize selected text">[I] Italic</button>
                   <button type="button" class="btn-secondary" style="padding: 2px 10px; font-size: 0.85rem;" onclick="formatBlogText('link')" title="Insert Link">🔗 Add Link</button>
+                  <button type="button" class="btn-secondary" onclick="formatBlogText('heading')" title="Heading">H2</button>
+                  <button type="button" class="btn-secondary" onclick="formatBlogText('paragraph')" title="Paragraph">¶</button>
+                  <button type="button" class="btn-secondary" onclick="formatBlogText('list')" title="Bullet List">☷ List</button>
+                  <button type="button" class="btn-secondary" onclick="formatBlogText('quote')" title="Quote">❝ Quote</button>
+                  <label class="btn-secondary" style="cursor:pointer; padding:2px 10px;">＋ Add Media
+                    <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="handleArticleBodyImageSelect(event)">
+                  </label>
                 </div>
               </div>
               <textarea id="articleContent" class="admin-textarea" rows="10" placeholder="Write your full article body here..." required></textarea>

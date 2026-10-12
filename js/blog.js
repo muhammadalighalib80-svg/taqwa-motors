@@ -8,35 +8,30 @@ let activeCategory = 'all';
 let searchKeyword = '';
 
 // Load Blog Posts from localStorage or initial dataset
-function loadBlogPosts() {
-  try {
-    const local = localStorage.getItem('taqwa_blog_posts');
-    if (local) {
-      allBlogPosts = JSON.parse(local);
+async function loadBlogPosts() {
+  const client = window.getSupabaseClient?.();
+  if (!client) {
+    console.error('Supabase unavailable: cannot load published articles');
+    allBlogPosts = [];
+  } else {
+    const { data, error } = await client.from('blog_posts').select('*')
+      .eq('status','published').eq('is_published',true).order('created_at',{ascending:false});
+    if (error) {
+      console.error('Published articles failed to load:', error);
+      allBlogPosts = [];
+    } else {
+      allBlogPosts = (data || []).map(p => ({
+        ...p,
+        featured_image: p.featured_image || p.image_url || 'assets/cars/fortuner_legender.jpg',
+        summary: p.summary || p.excerpt || ''
+      }));
     }
-  } catch (e) {
-    console.warn("Could not load from localStorage:", e);
   }
-
-  if (!allBlogPosts || allBlogPosts.length === 0) {
-    allBlogPosts = window.INITIAL_BLOG_POSTS || [];
-    try {
-      localStorage.setItem('taqwa_blog_posts', JSON.stringify(allBlogPosts));
-    } catch (e) {}
-  }
-
-  // Check URL parameters for direct article slug or hash
   const urlParams = new URLSearchParams(window.location.search);
   const slug = urlParams.get('slug') || (window.location.hash.startsWith('#post=') ? window.location.hash.replace('#post=', '') : null);
-
   renderBlogCategories();
   renderBlogList();
-
-  if (slug) {
-    setTimeout(() => {
-      openArticleBySlug(slug);
-    }, 150);
-  }
+  if (slug) openArticleBySlug(slug);
 }
 
 // Render Category Filter Buttons
@@ -70,44 +65,6 @@ function filterBlogByCategory(cat) {
   renderBlogList();
 }
 window.filterBlogByCategory = filterBlogByCategory;
-
-// Render List of Published Blog Posts
-function renderBlogList() {
-  const container = document.getElementById('blogPostsGrid');
-  const countBadge = document.getElementById('blogPostCount');
-  if (!container) return;
-
-  let filtered = allBlogPosts.filter(p => p.is_published !== false);
-
-  if (activeCategory !== 'all') {
-    filtered = filtered.filter(p => p.category === activeCategory);
-  }
-
-  if (searchKeyword) {
-    const q = searchKeyword.toLowerCase();
-    filtered = filtered.filter(p => 
-      p.title.toLowerCase().includes(q) ||
-      (p.summary && p.summary.toLowerCase().includes(q)) ||
-      (p.tags && p.tags.some(t => t.toLowerCase().includes(q))) ||
-      (p.category && p.category.toLowerCase().includes(q))
-    );
-  }
-
-  if (countBadge) {
-    countBadge.textContent = `${filtered.length} Article${filtered.length === 1 ? '' : 's'}`;
-  }
-
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <div style="text-align: center; grid-column: 1/-1; padding: 48px 20px;">
-        <div style="font-size: 2.5rem; margin-bottom: 12px;">🔍</div>
-        <h3 style="color: var(--text-dark); margin-bottom: 8px;">No Articles Found</h3>
-        <p style="color: var(--text-dark-muted); max-width: 420px; margin: 0 auto 20px;">Try adjusting your search terms or select another category.</p>
-        <button class="btn btn-primary btn-sm" onclick="resetBlogSearch()">View All News</button>
-      </div>
-    `;
-    return;
-  }
 
 // Strict HTML Sanitizer to prevent stored XSS
 function sanitizeHtml(html) {
@@ -162,6 +119,46 @@ function sanitizeHtml(html) {
     return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
   }
 }
+
+
+// Render List of Published Blog Posts
+function renderBlogList() {
+  const container = document.getElementById('blogPostsGrid');
+  const countBadge = document.getElementById('blogPostCount');
+  if (!container) return;
+
+  let filtered = allBlogPosts.filter(p => p.is_published !== false);
+
+  if (activeCategory !== 'all') {
+    filtered = filtered.filter(p => p.category === activeCategory);
+  }
+
+  if (searchKeyword) {
+    const q = searchKeyword.toLowerCase();
+    filtered = filtered.filter(p => 
+      p.title.toLowerCase().includes(q) ||
+      (p.summary && p.summary.toLowerCase().includes(q)) ||
+      (p.tags && p.tags.some(t => t.toLowerCase().includes(q))) ||
+      (p.category && p.category.toLowerCase().includes(q))
+    );
+  }
+
+  if (countBadge) {
+    countBadge.textContent = `${filtered.length} Article${filtered.length === 1 ? '' : 's'}`;
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; grid-column: 1/-1; padding: 48px 20px;">
+        <div style="font-size: 2.5rem; margin-bottom: 12px;">🔍</div>
+        <h3 style="color: var(--text-dark); margin-bottom: 8px;">No Articles Found</h3>
+        <p style="color: var(--text-dark-muted); max-width: 420px; margin: 0 auto 20px;">Try adjusting your search terms or select another category.</p>
+        <button class="btn btn-primary btn-sm" onclick="resetBlogSearch()">View All News</button>
+      </div>
+    `;
+    return;
+  }
+
 
   container.innerHTML = filtered.map(post => {
     const postDate = new Date(post.created_at).toLocaleDateString('en-PK', {

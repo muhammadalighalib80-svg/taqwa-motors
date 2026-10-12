@@ -77,9 +77,7 @@ async function loadBlogArticles() {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
-        remoteArticles = data;
-      }
+      if (!error && data) remoteArticles = data;
     } catch (e) {
       console.warn('Supabase blog_posts table query fallback:', e);
     }
@@ -100,7 +98,9 @@ async function loadBlogArticles() {
     localArticles = typeof INITIAL_BLOG_POSTS !== 'undefined' ? [...INITIAL_BLOG_POSTS] : [];
   }
 
-  allArticles = remoteArticles && remoteArticles.length > 0 ? remoteArticles : localArticles;
+  allArticles = remoteArticles !== null
+    ? [...remoteArticles, ...localArticles.filter(a => !remoteArticles.some(r => r.slug === a.slug))]
+    : localArticles;
   populateCategoryFilterDropdown();
   updateKPIs();
   renderFilteredArticles();
@@ -332,10 +332,30 @@ async function handleBlogImageFileSelect(e) {
     if (statusEl) statusEl.textContent = `Uploaded ✓ (${file.name})`;
   } catch (err) {
     console.error('Image upload failed:', err);
-    alert('Image upload failed. Using temporary preview.');
-    document.getElementById('articleImage').value = localUrl;
+    alert('Image upload failed; please retry before saving.');
+    updateBlogImagePreview(document.getElementById('articleImage').value);
   }
 }
+
+async function handleArticleBodyImageSelect(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 10 * 1024 * 1024) {
+    alert('Use JPG, PNG or WebP files up to 10MB.'); return;
+  }
+  const client = window.getSupabaseClient();
+  if (!client) { alert('Database unavailable.'); return; }
+  const path = 'articles/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9._-]/g,'_');
+  const { data, error } = await client.storage.from('blog-images').upload(path,file,{contentType:file.type});
+  if (error) { alert('Article image upload failed: ' + error.message); return; }
+  const url = client.storage.from('blog-images').getPublicUrl(data.path).data.publicUrl;
+  const field = document.getElementById('articleContent');
+  const at = field.selectionStart;
+  const insert = '<p><img src="' + url + '" alt="Article image"></p>';
+  field.setRangeText(insert, at, field.selectionEnd, 'end');
+  event.target.value = '';
+}
+window.handleArticleBodyImageSelect = handleArticleBodyImageSelect;
 
 // Formatting toolbar helper for Bold, Italic, Link
 function formatBlogText(command) {
@@ -351,6 +371,14 @@ function formatBlogText(command) {
     replacement = `<strong>${selectedText}</strong>`;
   } else if (command === 'italic') {
     replacement = `<em>${selectedText}</em>`;
+  } else if (command === 'heading') {
+    replacement = '<h2>' + selectedText + '</h2>';
+  } else if (command === 'paragraph') {
+    replacement = '<p>' + selectedText + '</p>';
+  } else if (command === 'list') {
+    replacement = '<ul><li>' + selectedText + '</li></ul>';
+  } else if (command === 'quote') {
+    replacement = '<blockquote>' + selectedText + '</blockquote>';
   } else if (command === 'link') {
     const url = prompt('Enter external hyperlink URL:', 'https://');
     if (!url) return;
@@ -425,17 +453,20 @@ async function handleArticleFormSubmit(e) {
 
   // 1. Try Supabase Insert/Update
   const supabase = window.getSupabaseClient();
-  if (supabase) {
-    try {
-      if (id && !id.startsWith('blog_')) {
-        await supabase.from('blog_posts').update(newArticleObj).eq('id', id);
-      } else {
-        await supabase.from('blog_posts').insert(newArticleObj);
-      }
-    } catch (err) {
-      console.warn('Supabase article sync warning:', err);
-    }
-  }
+  if (!supabase) { alert('Database connection is unavailable. Article was not saved.'); return; }
+  const payload = { title, slug, category, author, image_url, featured_image: image_url,
+    tags, excerpt, summary: excerpt, content, seo_title: seo_title || title, status,
+    is_published: status === 'published', publish_date: new Date().toISOString().split('T')[0] };
+  const existing = allArticles.find(a => String(a.id) === id);
+  const isDbId = !!(existing && /^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(String(existing.id)));
+  const { data: saved, error: saveError } = isDbId
+    ? await supabase.from('blog_posts').update(payload).eq('id', id).select().single()
+    : await supabase.from('blog_posts').insert(payload).select().single();
+  if (saveError || !saved) { alert('Article was NOT saved: ' + (saveError?.message || 'No database response')); return; }
+  await loadBlogArticles();
+  closeArticleModal();
+  alert('Article successfully saved to the website!');
+  return;
 
   // 2. Update Local State & LocalStorage
   if (id) {
@@ -470,41 +501,33 @@ async function toggleArticleStatus(idOrSlug) {
   article.status = newStatus;
   article.is_published = newStatus === 'published';
 
-  // Supabase update
   const supabase = window.getSupabaseClient();
-  if (supabase && article.id && !article.id.startsWith('blog_')) {
-    try {
-      await supabase.from('blog_posts').update({ status: newStatus, is_published: article.is_published }).eq('id', article.id);
-    } catch (e) {
-      console.warn('Supabase status toggle warning:', e);
-    }
+  if (!supabase || !/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(String(article.id))) {
+    alert('Please open and save this legacy article to publish it to Supabase.');
+    await loadBlogArticles(); return;
   }
-
-  // LocalStorage update
-  try {
-    localStorage.setItem(LOCAL_STORAGE_BLOG_KEY, JSON.stringify(allArticles));
-  } catch (e) {
-    console.error(e);
-  }
+  const { error } = await supabase.from('blog_posts')
+    .update({ status: newStatus, is_published: newStatus === 'published' }).eq('id', article.id);
+  if (error) { alert('Publishing failed: ' + error.message); await loadBlogArticles(); return; }
+  await loadBlogArticles();
+  return;
 
   updateKPIs();
   renderFilteredArticles();
 }
 
 async function confirmDeleteArticle(idOrSlug, title) {
+  const article = allArticles.find(a => String(a.id) === String(idOrSlug) || a.slug === idOrSlug);
   const proceed = confirm(`Are you sure you want to delete the article:\n"${title}"?`);
   if (!proceed) return;
 
-  // Supabase delete
   const supabase = window.getSupabaseClient();
-  if (supabase) {
-    try {
-      await supabase.from('blog_posts').delete().eq('slug', idOrSlug);
-      await supabase.from('blog_posts').delete().eq('id', idOrSlug);
-    } catch (e) {
-      console.warn('Supabase delete warning:', e);
-    }
+  if (!supabase || !/^[0-9a-f]{8}-[0-9a-f-]{27,}$/i.test(String(article?.id || idOrSlug))) {
+    alert('This item is not synced. Save it to Supabase before deleting remotely.');
+    return;
   }
+  const { error } = await supabase.from('blog_posts').delete().eq('id', article.id);
+  if (error) { alert('Delete failed: ' + error.message); return; }
 
   allArticles = allArticles.filter(a => (a.id !== idOrSlug) && (a.slug !== idOrSlug));
   try {
