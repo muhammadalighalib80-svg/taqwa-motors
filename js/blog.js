@@ -8,35 +8,30 @@ let activeCategory = 'all';
 let searchKeyword = '';
 
 // Load Blog Posts from localStorage or initial dataset
-function loadBlogPosts() {
-  try {
-    const local = localStorage.getItem('taqwa_blog_posts');
-    if (local) {
-      allBlogPosts = JSON.parse(local);
+async function loadBlogPosts() {
+  const client = window.getSupabaseClient?.();
+  if (!client) {
+    console.error('Supabase unavailable: cannot load published articles');
+    allBlogPosts = [];
+  } else {
+    const { data, error } = await client.from('blog_posts').select('*')
+      .eq('status','published').eq('is_published',true).order('created_at',{ascending:false});
+    if (error) {
+      console.error('Published articles failed to load:', error);
+      allBlogPosts = [];
+    } else {
+      allBlogPosts = (data || []).map(p => ({
+        ...p,
+        featured_image: p.featured_image || p.image_url || 'assets/cars/fortuner_legender.jpg',
+        summary: p.summary || p.excerpt || ''
+      }));
     }
-  } catch (e) {
-    console.warn("Could not load from localStorage:", e);
   }
-
-  if (!allBlogPosts || allBlogPosts.length === 0) {
-    allBlogPosts = window.INITIAL_BLOG_POSTS || [];
-    try {
-      localStorage.setItem('taqwa_blog_posts', JSON.stringify(allBlogPosts));
-    } catch (e) {}
-  }
-
-  // Check URL parameters for direct article slug or hash
   const urlParams = new URLSearchParams(window.location.search);
   const slug = urlParams.get('slug') || (window.location.hash.startsWith('#post=') ? window.location.hash.replace('#post=', '') : null);
-
   renderBlogCategories();
   renderBlogList();
-
-  if (slug) {
-    setTimeout(() => {
-      openArticleBySlug(slug);
-    }, 150);
-  }
+  if (slug) openArticleBySlug(slug);
 }
 
 // Render Category Filter Buttons
