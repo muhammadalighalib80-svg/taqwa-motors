@@ -98,7 +98,9 @@ async function loadBlogArticles() {
     localArticles = typeof INITIAL_BLOG_POSTS !== 'undefined' ? [...INITIAL_BLOG_POSTS] : [];
   }
 
-  allArticles = remoteArticles !== null ? remoteArticles : localArticles;
+  allArticles = remoteArticles !== null
+    ? [...remoteArticles, ...localArticles.filter(a => !remoteArticles.some(r => r.slug === a.slug))]
+    : localArticles;
   populateCategoryFilterDropdown();
   updateKPIs();
   renderFilteredArticles();
