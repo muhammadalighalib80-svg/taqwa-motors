@@ -311,27 +311,16 @@ async function handleBlogImageFileSelect(e) {
   try {
     const cleanName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
     const storagePath = `blog/${Date.now()}_${cleanName}`;
-    let bucketName = 'blog-images';
-
-    let { data: uploadData, error: uploadErr } = await supabase.storage
+    const bucketName = 'blog-images';
+    const { data: uploadData, error: uploadErr } = await supabase.storage
       .from(bucketName)
       .upload(storagePath, file, { contentType: file.type, upsert: false });
 
-    // Fallback to vehicle-images bucket if blog-images does not exist
-    if (uploadErr && (uploadErr.message?.includes('not found') || uploadErr.statusCode === '404' || uploadErr.error === 'Bucket not found')) {
-      bucketName = 'vehicle-images';
-      const fallbackRes = await supabase.storage
-        .from(bucketName)
-        .upload(`blog/${Date.now()}_${cleanName}`, file, { contentType: file.type, upsert: false });
-      uploadData = fallbackRes.data;
-      uploadErr = fallbackRes.error;
-    }
-
     if (uploadErr) {
-      console.warn('Storage upload error:', uploadErr);
-      alert('Could not upload image to Supabase storage. Falling back to local URL preview: ' + uploadErr.message);
-      document.getElementById('articleImage').value = localUrl;
-      if (statusEl) statusEl.textContent = `Failed: ${file.name}`;
+      console.error('Blog image storage upload failed:', uploadErr);
+      alert('Image was not uploaded. Please try again: ' + uploadErr.message);
+      if (statusEl) statusEl.textContent = `Upload failed: ${file.name}`;
+      updateBlogImagePreview(document.getElementById('articleImage').value);
       return;
     }
 
