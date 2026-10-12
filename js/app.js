@@ -740,7 +740,7 @@ function triggerScrollReveal() {
   });
 }
 
-// Check Dealership Live Status (Pakistan Time UTC+5: 10:00 AM - 10:00 PM)
+// Check Dealership Live Status (Pakistan Time UTC+5: 11:00 AM - 12:00 AM)
 function updateDealershipStatus() {
   const statusEl = document.getElementById("navStatusPill");
   if (!statusEl) return;
@@ -750,10 +750,10 @@ function updateDealershipStatus() {
   const pktTime = new Date(utc + (3600000 * 5));
   const hour = pktTime.getHours();
 
-  if (hour >= 10 && hour < 22) {
-    statusEl.innerHTML = `<span class="status-dot"></span> Open Today: 10:00 AM – 10:00 PM`;
+  if (hour >= 11) {
+    statusEl.innerHTML = `<span class="status-dot"></span> Open Today: 11:00 AM – 12:00 AM`;
   } else {
-    statusEl.innerHTML = `<span class="status-dot" style="background:#F59E0B;"></span> Showroom Opens at 10:00 AM`;
+    statusEl.innerHTML = `<span class="status-dot" style="background:#F59E0B;"></span> Showroom Opens at 11:00 AM`;
   }
 }
 

@@ -151,7 +151,7 @@ const FAQS_DATA = [
   },
   {
     q: "What are your showroom business hours?",
-    a: "We are open 7 days a week from 10:00 AM to 10:00 PM. You can visit anytime or schedule a dedicated VIP test drive and inspection through WhatsApp (0333-5406173)."
+    a: "We are open 7 days a week from 11:00 AM to 12:00 AM. You can visit anytime or schedule a dedicated VIP test drive and inspection through WhatsApp (0333-5406173)."
   },
   {
     q: "Do you offer car trade-ins / vehicle exchange?",
