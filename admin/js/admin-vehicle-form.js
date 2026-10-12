@@ -401,9 +401,6 @@ async function handleVehicleFormSubmit(e) {
         return;
       }
     }
-        return;
-      }
-    }
 
     // 3. Update existing images primary flags in DB if changed
     if (isEditMode && existingImages.length > 0) {
