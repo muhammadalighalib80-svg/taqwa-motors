@@ -219,6 +219,38 @@ function renderCarCard(car) {
   `;
 }
 
+// Brand choices must reflect the same status tab as the visible vehicle cards.
+function refreshInventoryBrandOptions() {
+  const inventory = Array.isArray(window.INVENTORY_DATA) ? window.INVENTORY_DATA : [];
+  const relevant = inventory.filter(car => {
+    if (currentFilterCategory === 'available') return car.status === 'available';
+    if (currentFilterCategory === 'sold') return car.status === 'sold';
+    if (currentFilterCategory === 'cancel' || currentFilterCategory === 'cancelled') return car.status === 'cancelled';
+    return car.status !== 'hidden';
+  });
+  const makes = new Map();
+  relevant.forEach(car => {
+    const label = String(car.make || '').trim();
+    if (!label) return;
+    const key = label.toLowerCase();
+    if (!makes.has(key)) makes.set(key, { label, count: 0 });
+    makes.get(key).count++;
+  });
+  const sorted = [...makes.values()].sort((a,b) => a.label.localeCompare(b.label));
+  for (const id of ['filterMake', 'heroMakeSelect']) {
+    const dropdown = document.getElementById(id);
+    if (!dropdown) continue;
+    const previous = id === 'filterMake' ? activeFilters.make : dropdown.value;
+    dropdown.replaceChildren();
+    const allOption = new Option('All Brands (' + relevant.length + ')', 'all');
+    dropdown.add(allOption);
+    sorted.forEach(({label,count}) => dropdown.add(new Option(label + ' (' + count + ')', label)));
+    const exists = sorted.some(entry => entry.label.toLowerCase() === String(previous).toLowerCase());
+    dropdown.value = exists ? sorted.find(entry => entry.label.toLowerCase() === String(previous).toLowerCase()).label : 'all';
+    if (id === 'filterMake') activeFilters.make = dropdown.value;
+  }
+}
+
 // Filter and Render Full Inventory Hub
 function renderInventoryGrid() {
   const container = document.getElementById("inventoryCarsGrid");
@@ -393,6 +425,7 @@ function resetAllFilters() {
     heroCity.disabled = true;
   }
 
+  refreshInventoryBrandOptions();
   renderInventoryGrid();
   showToast("All filters have been reset");
 }
@@ -792,7 +825,9 @@ function setupAppEvents() {
     btn.addEventListener("click", (e) => {
       document.querySelectorAll(".featured-tab-btn").forEach(b => b.classList.remove("active"));
       e.target.classList.add("active");
-      currentFilterCategory = e.target.getAttribute("data-category");
+      currentFilterCategory = e.currentTarget.getAttribute("data-category");
+      activeFilters.make = 'all';
+      refreshInventoryBrandOptions();
       renderInventoryGrid();
     });
   });
@@ -1002,6 +1037,8 @@ async function loadPublicInventoryFromSupabase() {
     }
 
     if (!dbVehicles || dbVehicles.length === 0) {
+      window.INVENTORY_DATA = [];
+      refreshInventoryBrandOptions();
       isInventoryLoading = false;
       renderInventoryGrid();
       return;
@@ -1039,20 +1076,8 @@ async function loadPublicInventoryFromSupabase() {
     const transformed = (dbVehicles || []).map(row => transformDbVehicle(row, imagesMap));
     window.INVENTORY_DATA = transformed;
 
-    // Update Dynamic Filter Make options
-    if (transformed.length > 0) {
-      const makes = Array.from(new Set(transformed.map(v => v.make).filter(Boolean)));
-      const makeSelect = document.getElementById("filterMake");
-      if (makeSelect && makes.length > 0) {
-        const currentVal = makeSelect.value;
-        let opts = `<option value="all">All Brands (${transformed.length})</option>`;
-        makes.forEach(m => {
-          const cnt = transformed.filter(v => v.make.toLowerCase() === m.toLowerCase()).length;
-          opts += `<option value="${m}" ${currentVal.toLowerCase() === m.toLowerCase() ? 'selected' : ''}>${m} (${cnt})</option>`;
-        });
-        makeSelect.innerHTML = opts;
-      }
-    }
+    // Count only vehicles relevant to the selected status tab.
+    refreshInventoryBrandOptions();
 
   } catch (err) {
     console.error("Failed to load inventory from Supabase:", err);
