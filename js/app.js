@@ -674,56 +674,71 @@ function renderFAQs() {
 }
 
 // Render Homepage Blog / News Preview
-function renderHomepageBlog() {
+async function renderHomepageBlog() {
   const container = document.getElementById("homepageBlogGrid");
   if (!container) return;
-
-  let posts = [];
-  try {
-    const local = localStorage.getItem('taqwa_blog_posts');
-    if (local) posts = JSON.parse(local);
-  } catch (e) {
-    console.warn("Could not read local blog posts:", e);
-  }
-
-  if (!posts || posts.length === 0) {
-    posts = window.INITIAL_BLOG_POSTS || [];
-  }
-
-  const published = posts.filter(p => p.is_published !== false).slice(0, 3);
-
-  if (published.length === 0) {
-    container.innerHTML = `<p style="text-align: center; color: var(--text-dark-muted); grid-column: 1/-1;">No news articles published yet.</p>`;
+  container.textContent = 'Loading latest articles...';
+  const client = typeof window.getSupabaseClient === 'function' ? window.getSupabaseClient() : null;
+  if (!client) {
+    container.textContent = 'Articles temporarily unavailable.';
     return;
   }
-
-  container.innerHTML = published.map(post => {
-    const postDate = new Date(post.created_at).toLocaleDateString('en-PK', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
+  const { data, error } = await client.from('blog_posts')
+    .select('slug,title,category,author,featured_image,image_url,summary,excerpt,created_at')
+    .eq('status', 'published')
+    .eq('is_published', true)
+    .order('created_at', { ascending: false })
+    .limit(3);
+  if (error) {
+    console.error('Homepage articles fetch failed:', error);
+    container.textContent = 'Latest articles are temporarily unavailable.';
+    return;
+  }
+  const posts = data || [];
+  if (!posts.length) {
+    container.textContent = 'No articles published yet.';
+    return;
+  }
+  container.replaceChildren();
+  posts.forEach(post => {
+    const article = document.createElement('article');
+    article.className = 'blog-card reveal-on-scroll';
+    article.style.cursor = 'pointer';
+    article.addEventListener('click', () => {
+      window.location.href = 'blog.html?slug=' + encodeURIComponent(post.slug);
     });
-
-    return `
-      <article class="blog-card reveal-on-scroll" onclick="window.location.href='blog.html?slug=${encodeURIComponent(post.slug)}'">
-        <div class="blog-card-img-wrap">
-          <img src="${post.featured_image}" alt="${post.title}" class="blog-card-img" loading="lazy">
-          <span class="blog-card-category">${post.category || 'Automotive'}</span>
-          <span class="blog-card-readtime">${post.read_time || '4 min read'}</span>
-        </div>
-        <div class="blog-card-body">
-          <div class="blog-card-date">${postDate} • By ${post.author || 'Taqwa Motors'}</div>
-          <h3 class="blog-card-title">${post.title}</h3>
-          <p class="blog-card-summary">${post.summary}</p>
-          <div class="blog-card-footer">
-            <span>Read Full Guide</span>
-            <span>→</span>
-          </div>
-        </div>
-      </article>
-    `;
-  }).join('');
-
+    const imageWrap = document.createElement('div');
+    imageWrap.className = 'blog-card-img-wrap';
+    const img = document.createElement('img');
+    img.className = 'blog-card-img';
+    img.loading = 'lazy';
+    img.alt = post.title || 'Article';
+    img.src = post.featured_image || post.image_url || 'assets/cars/fortuner_legender.jpg';
+    img.onerror = () => { img.onerror = null; img.src = 'assets/cars/fortuner_legender.jpg'; };
+    const category = document.createElement('span');
+    category.className = 'blog-card-category';
+    category.textContent = post.category || 'Automotive';
+    imageWrap.append(img, category);
+    const body = document.createElement('div');
+    body.className = 'blog-card-body';
+    const meta = document.createElement('div');
+    meta.className = 'blog-card-date';
+    const parsedDate = new Date(post.created_at);
+    const dateText = Number.isNaN(parsedDate.getTime()) ? '' : parsedDate.toLocaleDateString('en-PK', { month: 'short', day: 'numeric', year: 'numeric' });
+    meta.textContent = dateText + ' • By ' + (post.author || 'Taqwa Motors');
+    const title = document.createElement('h3');
+    title.className = 'blog-card-title';
+    title.textContent = post.title || '';
+    const excerpt = document.createElement('p');
+    excerpt.className = 'blog-card-summary';
+    excerpt.textContent = post.summary || post.excerpt || '';
+    const footer = document.createElement('div');
+    footer.className = 'blog-card-footer';
+    footer.textContent = 'Read Full Guide →';
+    body.append(meta, title, excerpt, footer);
+    article.append(imageWrap, body);
+    container.append(article);
+  });
   triggerScrollReveal();
 }
 
