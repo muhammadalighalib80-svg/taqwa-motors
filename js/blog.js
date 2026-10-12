@@ -66,44 +66,6 @@ function filterBlogByCategory(cat) {
 }
 window.filterBlogByCategory = filterBlogByCategory;
 
-// Render List of Published Blog Posts
-function renderBlogList() {
-  const container = document.getElementById('blogPostsGrid');
-  const countBadge = document.getElementById('blogPostCount');
-  if (!container) return;
-
-  let filtered = allBlogPosts.filter(p => p.is_published !== false);
-
-  if (activeCategory !== 'all') {
-    filtered = filtered.filter(p => p.category === activeCategory);
-  }
-
-  if (searchKeyword) {
-    const q = searchKeyword.toLowerCase();
-    filtered = filtered.filter(p => 
-      p.title.toLowerCase().includes(q) ||
-      (p.summary && p.summary.toLowerCase().includes(q)) ||
-      (p.tags && p.tags.some(t => t.toLowerCase().includes(q))) ||
-      (p.category && p.category.toLowerCase().includes(q))
-    );
-  }
-
-  if (countBadge) {
-    countBadge.textContent = `${filtered.length} Article${filtered.length === 1 ? '' : 's'}`;
-  }
-
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <div style="text-align: center; grid-column: 1/-1; padding: 48px 20px;">
-        <div style="font-size: 2.5rem; margin-bottom: 12px;">🔍</div>
-        <h3 style="color: var(--text-dark); margin-bottom: 8px;">No Articles Found</h3>
-        <p style="color: var(--text-dark-muted); max-width: 420px; margin: 0 auto 20px;">Try adjusting your search terms or select another category.</p>
-        <button class="btn btn-primary btn-sm" onclick="resetBlogSearch()">View All News</button>
-      </div>
-    `;
-    return;
-  }
-
 // Strict HTML Sanitizer to prevent stored XSS
 function sanitizeHtml(html) {
   if (!html) return '';
@@ -157,6 +119,46 @@ function sanitizeHtml(html) {
     return html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
   }
 }
+
+
+// Render List of Published Blog Posts
+function renderBlogList() {
+  const container = document.getElementById('blogPostsGrid');
+  const countBadge = document.getElementById('blogPostCount');
+  if (!container) return;
+
+  let filtered = allBlogPosts.filter(p => p.is_published !== false);
+
+  if (activeCategory !== 'all') {
+    filtered = filtered.filter(p => p.category === activeCategory);
+  }
+
+  if (searchKeyword) {
+    const q = searchKeyword.toLowerCase();
+    filtered = filtered.filter(p => 
+      p.title.toLowerCase().includes(q) ||
+      (p.summary && p.summary.toLowerCase().includes(q)) ||
+      (p.tags && p.tags.some(t => t.toLowerCase().includes(q))) ||
+      (p.category && p.category.toLowerCase().includes(q))
+    );
+  }
+
+  if (countBadge) {
+    countBadge.textContent = `${filtered.length} Article${filtered.length === 1 ? '' : 's'}`;
+  }
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; grid-column: 1/-1; padding: 48px 20px;">
+        <div style="font-size: 2.5rem; margin-bottom: 12px;">🔍</div>
+        <h3 style="color: var(--text-dark); margin-bottom: 8px;">No Articles Found</h3>
+        <p style="color: var(--text-dark-muted); max-width: 420px; margin: 0 auto 20px;">Try adjusting your search terms or select another category.</p>
+        <button class="btn btn-primary btn-sm" onclick="resetBlogSearch()">View All News</button>
+      </div>
+    `;
+    return;
+  }
+
 
   container.innerHTML = filtered.map(post => {
     const postDate = new Date(post.created_at).toLocaleDateString('en-PK', {
